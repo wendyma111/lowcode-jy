@@ -1,22 +1,25 @@
 import React from 'react';
-import styles from './index.css';
+import './global.css';
+import styles from './index.module.css'
+import Button from '__mock/components/Button'
+import Container from '__mock/components/Container'
+import Text from '__mock/components/Text'
+import { getModel } from 'model'
+import Renderer from 'renderer'
+import TopArea from './toparea'
+import LeftArea from './leftarea'
+import CenterArea from './centerarea'
+import RightArea from './rightarea'
 
 function App() {
   return (
-    <div className={styles.App}>
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className={styles["App-link"]}
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.container}>
+      <TopArea />
+      <div className={styles.bottomArea}>
+        <LeftArea />
+        <CenterArea />
+        <RightArea />
+      </div>
     </div>
   );
 }

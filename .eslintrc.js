@@ -20,5 +20,6 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
+        "react/no-find-dom-node": "off", // 暂且允许使用react-dom的findDOMNode方法
     }
 }
