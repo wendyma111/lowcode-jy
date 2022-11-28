@@ -1,0 +1,50 @@
+.container {
+  width: 950px;
+  height: 495px;
+  display: flex;
+  flex-direction: row;  
+}
+
+.left-area {
+  width: 455px;
+  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-area {
+  border: 1px solid rgba(0,0,0,.1);
+  background-color: #fff;
+}
+
+.variable-container {
+  margin-top: 10px;
+  overflow: scroll;
+  flex: 1;
+}
+
+.variable-item:hover {
+  background-color: rgba(0,0,0,.05);
+}
+
+.variable-item {
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 30px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 16px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.card-container {
+  width: 445px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}

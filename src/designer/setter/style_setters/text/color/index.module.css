@@ -1,0 +1,19 @@
+.color-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 26px;
+}
+
+.color-block {
+  width: 60px;
+  border-radius: 4px;
+  height: 100%;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.color-input {
+  margin-left: 4px;
+  height: 100%;
+}

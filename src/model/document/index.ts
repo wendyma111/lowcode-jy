@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { generateKey, generateEmptyPageSchema } from 'utils/generator'
 import { EventEmitter } from 'events'
 import NodeInstance from '../node'
+import { makeObservable, observable, action, toJS, autorun } from 'mobx'
+import { PAGE_LIFECYCLE_DEFAULT_VALUE } from 'constant'
 
 const currentEditNode_change_event = 'currentEditNodeChange'
 
@@ -11,40 +13,66 @@ class Document implements DocumentModel {
     const newPageSchema = pageSchema ?? generateEmptyPageSchema()
 
     this.load(newPageId, newPageSchema)
+
+    makeObservable(this, {
+      data: observable,
+      currentEditNode: observable.ref,
+      setData: action,
+      deleteData: action,
+      setCurrentEditNode: action
+    })
+  }
+
+  name: string = ''
+
+  data: Record<string, IData> = {}
+
+  lifecycle: string = PAGE_LIFECYCLE_DEFAULT_VALUE
+
+  methods: Record<string, IMethod> = {}
+
+  setData = (data: Record<string, IData>) => {
+    Object.assign(this.data, data)
+  }
+
+  deleteData = (data: IData) => {
+    delete this.data[data.key]
   }
 
   private _emitter = new EventEmitter()
-  private _schema!: IPage
 
   componentTree!: Record<string, INode>
 
   get schema() {
-    return this._schema
+    const newComponentTree: Record<string, any> = {}
+
+    for(const [id, node] of this.nodes) {
+      newComponentTree[id] = node.schema
+    }
+
+    return {
+      name: this.name,
+      data: toJS(this.data),
+      componentTree: newComponentTree,
+      lifecycle: this.lifecycle
+    }
   }
 
   id!: PageId
 
-  private _nodes: Map<NodeId, NodeInstance> = new Map()
+  nodes: Map<NodeId, NodeInstance> = new Map()
 
   private _rootNode!: NodeInstance
 
-  private _currentEditNode: NodeInstance | null = null
+  currentEditNode: NodeInstance | null = null
 
   get rootNode() {
     return this._rootNode
   }
 
-  get nodes() {
-    return this._nodes
-  }
-
-  get currentEditNode() {
-    return this._currentEditNode
-  }
-
   setCurrentEditNode(nodeId: NodeId) {
-    this._currentEditNode = this.getNodeById(nodeId)
-    this._emitter.emit(currentEditNode_change_event, this._currentEditNode)
+    this.currentEditNode = this.getNodeById(nodeId)
+    this._emitter.emit(currentEditNode_change_event, this.currentEditNode)
   }
 
   onCurrentEditNodeChange(fn: (currentEditNode: NodeInstance) => void): () => void {
@@ -53,9 +81,11 @@ class Document implements DocumentModel {
   }
 
   load(newPageId: PageId, newPageSchema: IPage) {
-    this._schema = newPageSchema
+    this.name = newPageSchema.name
+    this.setData(newPageSchema.data)
     this.id = newPageId
     this.componentTree = newPageSchema.componentTree
+    this.lifecycle = newPageSchema.lifecycle ?? PAGE_LIFECYCLE_DEFAULT_VALUE
 
     _.forIn(this.componentTree, (nodeSchema, nodeId) => {
       if (nodeSchema.parentId === null) {
@@ -65,26 +95,31 @@ class Document implements DocumentModel {
     })
   }
 
-  createNode(nodeId: NodeId, nodeSchema: INode) {
-    if (!this._nodes.has(nodeId)) {
-      const node: NodeInstance = new NodeInstance(this, nodeId, nodeSchema)
+  createNode(nodeId: NodeId, nodeSchema: Partial<INode>) {
+    const defaultSchema = {
+      parentId: null,
+      children: []
+    }
+
+    if (!this.nodes.has(nodeId)) {
+      const node: NodeInstance = new NodeInstance(this, nodeId, _.merge({}, defaultSchema, nodeSchema) as INode)
       return node
     }
   }
 
   addNode(node: NodeInstance) {
-    if (!this._nodes.has(node.id)) {
-      this._nodes.set(node.id, node)
+    if (!this.nodes.has(node.id)) {
+      this.nodes.set(node.id, node)
     }
   }
 
   getNodeById(nodeId: NodeId) {
-    return this._nodes.get(nodeId) ?? null
+    return this.nodes.get(nodeId) ?? null
   }
 
   getNodeByComponentName(componentName: string) {
     const nodeList = []
-    for(const node of this._nodes.values()) {
+    for(const node of this.nodes.values()) {
       if (node.getComponentMeta().componentName === componentName) {
         nodeList.push(node)
       }
@@ -93,8 +128,8 @@ class Document implements DocumentModel {
   }
 
   removeNode(node: NodeInstance) {
-    if (!this._nodes.has(node.id)) {
-      this._nodes.delete(node.id)
+    if (!this.nodes.has(node.id)) {
+      this.nodes.delete(node.id)
     }
   }
 }

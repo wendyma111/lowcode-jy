@@ -1,15 +1,21 @@
 import React, { Component } from 'react'
 
 interface IProps {
-  color: string;
-  fontSize: number;
+  style: Record<string, any>;
+  text: string;
+  onClick: () => void;
 }
 
 class Text extends Component<IProps> {
   render() {
-    const { color, fontSize } = this.props
+    const { style, text, onClick } = this.props
+
     return (
-      <span id="text" style={{ color, fontSize }}>texttext</span>
+      <div id="text" style={style} onClick={onClick}>
+        <span>
+          {`text: ${text}`}
+        </span>
+      </div>
     )
   }
 }

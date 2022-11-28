@@ -21,7 +21,7 @@ function MenuContent(props: { node: NodeInstance; position: { left: number; top:
     if (!projectModel.clipboard) return
 
     const newSchema = cloneNodeSchema(projectModel.clipboard)
-    node.appendChild(newSchema)
+    node.appendChildBySchema(newSchema)
   }, [])
 
   const operations = useRef([
@@ -61,7 +61,7 @@ function ContextMenu(props: { mouseEvent: React.MouseEvent | null }) {
   const [dom, setDom] = useState<null | Element>(null)
   const [position, setPosition] = useState<{left: number, top: number} | null>(null)
   const [currentNode, setCurrentNode] = useState<null | NodeInstance>(null)
-  
+
   useEffect(() => {
     const { projectModel } = getModel()
     const clear = projectModel.currentDocument?.onCurrentEditNodeChange((node) => {

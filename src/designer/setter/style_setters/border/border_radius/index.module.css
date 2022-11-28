@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  flex-direction: row;
+}
+
+.slider {
+  width: 120px;
+}
+
+.input {
+  margin-left: 4px;
+  flex: 1;
+}

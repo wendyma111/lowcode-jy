@@ -12,22 +12,37 @@ export function findNodeIdFromFiber(fiberNode: any) {
     if (nodeId) return nodeId
     fiber = fiber.return
   }
+
   return null
 }
 
-export function addDetectClassName(dom: Element) {
-  if (_.isNil(dom) || _.isNil(dom.className)) return
-  dom.className = dom.className + ' _detecting'
+export function addClassName(dom: Element, ...classNameList: string[]) {
+  if (_.isNil(dom)) return
+
+  const classArr = Array.from(dom.classList)
+  const finalClassNameList = classNameList.filter(className => !classArr.includes(className))
+  dom.classList.add(...finalClassNameList)
 }
 
-export function clearDetectClassName(dom: Element) {
-  if (_.isNil(dom) || _.isNil(dom.className)) return
-  dom.className = dom.className.replace(/\s+_detecting/, '')
+export function clearClassName(dom: Element, ...classNameList: string[]) {
+  if (_.isNil(dom)) return
+  
+  const classArr = Array.from(dom.classList)
+  const finalClassNameList = classNameList.filter(className => classArr.includes(className))
+  dom.classList.remove(...finalClassNameList)
 }
 
-export function getDomByNodeId(nodeId: string) {
-  return document.querySelector(`[data-nodeid="${nodeId}"]`)
+export function getDomByNodeId(nodeId: string, target?: HTMLElement) {
+  const targetDom = target ?? (document.getElementById('simulator-canvas') as HTMLElement)
+  return targetDom?.querySelector?.(`[data-nodeid="${nodeId}"]`)
 }
+
+
+export function getDomByNodeIdInTree(nodeId: string, target?: HTMLElement) {
+  const targetDom = target ?? (document.getElementById('outline-tree') as HTMLElement)
+  return targetDom?.querySelector?.(`[data-nodeid="${nodeId}"]`)
+}
+
 
 export function cloneNodeSchema(node: NodeInstance, parentId?: string): Record<string, INode> {
   const newNodeId = generateKey()

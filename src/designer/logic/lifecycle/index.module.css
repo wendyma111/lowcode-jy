@@ -1,0 +1,121 @@
+.close-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.folder-icon {
+  font-size: 30px;
+  color: #1890ff;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 80vw;
+  height: 80vh;
+  background: #f0f2f5;
+}
+
+.sidebar-container {
+  width: 20%;
+  background: rgb(250, 250, 250);
+  overflow-y: scroll;
+}
+
+.down-icon {
+  font-size: 12px;
+  margin-right: 2px;
+}
+
+.item-container {
+  cursor: pointer;
+  padding-right: 20px;
+  background: #fff;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.item-container:hover .name {
+  color: #0052d9;
+}
+
+.filetext-icon {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.edit-container {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-container {
+  height: 43px;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.tab-item {
+  max-width: 130px;
+  margin-right: 4px;
+  height: 43px;
+  flex: 1;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tab-item:hover .name {
+  color: rgba(0,82,217,0.6);
+}
+
+.tab-item .close {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tab-item .close:hover {
+  color: rgba(0, 0, 0, 1);
+}
+
+.empty-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ide-editor-container {
+  background: #fff;
+  padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.path {
+  margin-bottom: 10px;
+  color: rgba(0,0,0,0.5);
+}
+
+.button-container {
+  height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

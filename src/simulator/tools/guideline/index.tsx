@@ -1,55 +1,32 @@
 import React, { PureComponent } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, findDOMNode } from 'react-dom'
 import NodeInstance from 'model/node'
 import { Tooltip } from 'antd'
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons'
 import { getModel } from 'model'
+import { observer } from 'mobx-react'
 import styles from './index.module.css'
 import { getDomByNodeId } from 'simulator/utils'
 
-class GuideLine extends PureComponent<{}, { currentEditNode: NodeInstance | null }> {
+class GuideLine extends PureComponent {
   clearNodeChangeHandler!: () => void
 
-  constructor(props: {}) {
-    super(props)
-
-    this.state = {
-      currentEditNode: null
-    }
-
-    this.init()
-  }
-
-  init() {
-    const { projectModel } = getModel()
-    this.clearNodeChangeHandler = (projectModel.currentDocument as DocumentModel).onCurrentEditNodeChange(
-      (currentEditNode: NodeInstance) => {
-        this.setState({
-          currentEditNode
-        })
-      }
-    )
-  }
-
-  componentWillUnmount(): void {
-    this.clearNodeChangeHandler?.()
-  }
-
   handleDelete() {
-    const { currentEditNode } = this.state
+    const currentEditNode = getModel().projectModel.currentDocument?.currentEditNode
     const node = currentEditNode as NodeInstance
     node.parent?.removeChild(node)
   }
 
   handleCopy() {
     const { projectModel } = getModel()
-    const { currentEditNode } = this.state
+    const currentEditNode = getModel().projectModel.currentDocument?.currentEditNode
     projectModel.clipboard = currentEditNode
   }
 
   render() {
-    const { currentEditNode } = this.state
+    const currentEditNode = getModel().projectModel.currentDocument?.currentEditNode
     const container = getDomByNodeId(currentEditNode?.id as string)
+
     return currentEditNode && container 
       ? createPortal(
           <div className={styles['simulator-content']}>
@@ -70,4 +47,4 @@ class GuideLine extends PureComponent<{}, { currentEditNode: NodeInstance | null
   }
 }
 
-export default GuideLine
+export default observer(GuideLine)

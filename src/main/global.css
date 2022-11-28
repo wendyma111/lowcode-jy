@@ -18,3 +18,39 @@ body {
 .ant-menu {
   display: flex;
 }
+
+.ant-popover-inner-content {
+  padding: 0;
+}
+
+#drag-image {
+  width: 100px;
+  border-radius: 4px;
+  height: 30px;
+  background: rgba(0,0,0,0.2);
+  text-align: center;
+  line-height: 30px;
+  position: absolute;
+  left: -999px;
+}
+
+.drag-placeholder {
+  width: 100px;
+  border-radius: 4px;
+  height: 30px;
+  background: rgba(0,0,0,0.2);
+  text-align: center;
+  line-height: 30px;
+}
+
+.drag-active-container {
+  background: rgba(25, 122, 255, 0.3)!important
+}
+
+.drag-object-disable {
+  opacity: 0.3
+}
+
+.ant-modal {
+  width: fit-content!important;
+}

@@ -2,13 +2,10 @@ import React from 'react'
 import styles from './index.module.css'
 import { getModel } from 'model'
 
-function Logo() {
-  const { projectModel } = getModel()
-  const { name } = projectModel
-  
+function Logo() {  
   return (
     <div className={styles.container}>
-      {name}
+      低代码应用
     </div>
   )
 }

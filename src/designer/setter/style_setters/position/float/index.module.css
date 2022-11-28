@@ -1,0 +1,9 @@
+.group {
+  display: flex;
+  width: 100%;
+}
+
+.item {
+  flex: 1;
+  text-align: center;
+}

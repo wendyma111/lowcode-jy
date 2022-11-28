@@ -1,0 +1,25 @@
+.space-between {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bind-data {
+  transform: rotate(45deg);
+  cursor: pointer;
+}
+
+.save {
+  color: #008dff;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 12px;
+}
+
+.cancel {
+  color: #008dff;
+  cursor: pointer;
+  font-size: 12px;
+}

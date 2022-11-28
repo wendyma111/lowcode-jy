@@ -2,6 +2,7 @@ import React, { useCallback, useState, useRef } from 'react'
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons'
 import styles from './index.module.css'
 import ComponentSidebar from './component_sidebar'
+import PageManage from './page_manage'
 
 export const content_width = 312
 
@@ -63,6 +64,8 @@ function LeftArea() {
         className={styles.content}
         style={{ width: content_width }}
       >
+        <PageManage />
+        <div className={styles['library-title']}>组件库</div>
         <ComponentSidebar />
         <div className={styles.button} onClick={handleToggleOpen}>
           {toggleState === 'open' ? <DoubleLeftOutlined /> : <DoubleRightOutlined />}

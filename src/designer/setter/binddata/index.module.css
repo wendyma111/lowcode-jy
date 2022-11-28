@@ -1,0 +1,5 @@
+.bind-data {
+  transform: rotate(45deg);
+  cursor: pointer;
+  color: #008dff;
+}

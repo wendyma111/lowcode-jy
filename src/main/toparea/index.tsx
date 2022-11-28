@@ -1,11 +1,22 @@
 import React, { Component } from 'react'
 import styles from './index.module.css'
 import Logo from './logo'
+import Menu from './menu'
+import PreviewButton from './previewbutton'
+import SchemaButton from './schemabutton'
 
 class TopArea extends Component {
+
   render() {
     return <div className={styles.topContainer}>
-      <Logo />
+      <div className={styles.left}>
+        <Logo />
+        <Menu />
+      </div>
+      <div className={styles.right}>
+        <SchemaButton />
+        <PreviewButton />
+      </div>
     </div>
   }
 }

@@ -23,3 +23,9 @@
   position: relative;
   height: 100%;
 }
+
+.library-title {
+  padding-left: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}

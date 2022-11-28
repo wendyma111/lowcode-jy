@@ -1,0 +1,20 @@
+.container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.link {
+  font-size: 14px;
+  color: #1890ff;
+  cursor: pointer;
+}
+
+.empty-img {
+  height: 130px;
+  width: 130px;
+  margin-bottom: 8px;
+}

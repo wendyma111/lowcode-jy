@@ -1,0 +1,36 @@
+.item {
+  cursor: pointer;
+  height: 30px;
+  line-height: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.label:hover {
+  color: #006cff;
+}
+
+.child-container {
+  /* padding-left: 10px; */
+}
+
+.tree-container {
+  padding: 4px 4px 60px 4px;
+  overflow-x: scroll;
+}
+
+.icon {
+  font-size: 10px;
+  margin-right: 4px;
+}
+
+.icon-container {
+  display: inline-block;
+  /* padding-left: 4px; */
+}
+
+.drag-mock-placeholder {
+  width: 0;
+  height: 0;
+}

@@ -1,7 +1,6 @@
 export default {
   name: 'test',
   version: '0.0.0',
-  currentPage: 'pageId1',
   componentsMap: {
     Container: {
       isContainer: true,
@@ -45,18 +44,23 @@ export default {
         npm: '@lowcode-material/Text',
         version: '1.0.0',
       },
+      events: [
+        {
+          name: 'onClick',
+          title: '点击',
+        }
+      ],
       settings: {
-        color: {
-          settingName: 'color',
-          label: '字体颜色',
-          type: 'color',
-          value: 'black'
+        onClick: {
+          settingName: 'onClick',
+          label: '点击',
+          type: 'event',
         },
-        fontSize: {
-          settingName: 'fontSize',
-          label: '字体大小',
-          type: 'number',
-          value: 14
+        text: {
+          settingName: 'text',
+          label: '文本',
+          type: 'string',
+          value: '文本'
         }
       }
     },
@@ -147,38 +151,135 @@ export default {
       }
     }
   },
+  data: {
+    string: {
+      type: 'string',
+      defaultValue: 'string111',
+      desc: '',
+      key: 'string',
+      scope: 'global'
+    },
+    key1: {
+      type: 'boolean',
+      defaultValue: false,
+      desc: '',
+      key: 'key1',
+      scope: 'global'
+    },
+    key2: {
+      type: 'boolean',
+      defaultValue: false,
+      desc: '',
+      key: 'key2',
+      scope: 'global'
+    }
+  },
+  methods: {
+    method1: {
+      key: 'method1',
+      value: 'function handler(e){ console.log($state.global.string) }',
+      path: '$api.custom.method1'
+    },
+    method2: {
+      key: 'method2',
+      value: 'function handler(e){ $api.dispatch("global.string", String(Math.random())) }',
+      path: '$api.custom.method1'
+    },
+  },
   pagesMap: {
     'pageId1': {
       name: '页面一',
       css: '.div { background: "red" }',
+      data: {
+        key2: {
+          type: 'string',
+          defaultValue: 'hahahah',
+          desc: '',
+          key: 'key2',
+          scope: 'pageId1'
+        }
+      },
+      lifecycle: `export default {
+        componentWillMount() {
+          console.log('componentWillMount')
+        },
+        componentDidMount(){
+          console.log('componentDidMount')
+        }
+      }`,
+      methods: {
+    
+      },
       componentTree: {
+        // 虚拟根节点
+        'root': {
+          parentId: null,
+          children: ['compId11']
+        },
+        'compId15': {
+          componentName: 'Text',
+          parentId: 'root',
+          props: {},
+          children: []
+        },
         'compId11': {
           componentName: 'Container',
-          parentId: null,
+          parentId: 'root',
           props: {},
-          children: ['compId13']
+          children: ['compId13', 'compId14']
+        },
+        'compId14': {
+          componentName: 'Container',
+          parentId: 'compId11',
+          props: {
+            style: {
+              width: 500,
+              height: 200,
+            }
+          },
+          children: []
         },
         'compId13': {
           componentName: 'Container',
           parentId: 'compId11',
-          props: {},
+          props: {
+            style: {
+              width: 500,
+              height: 100,
+              display: 'flex',
+              flexDirection: 'column-reverse'
+            }
+          },
           children: ['compId12']
         },
         'compId12': {
           componentName: 'Text',
           parentId: 'compId13',
-          props: {},
+          props: {
+            test: {
+              type: 'JSExpression',
+              value: '$state.global.key1'
+            },
+            test1: {
+              type: 'JSExpression',
+              value: '$state.global.key2'
+            },
+            extra: 'color'
+          },
           children: []
         }
       }
     },
     'pageId2': {
       name: '页面二',
-      css: '.div { background: "black" }',
       componentTree: {
+        'root': {
+          parentId: null,
+          children: ['compId21']
+        },  
         'compId21': {
           componentName: 'Container',
-          parentId: null,
+          parentId: 'root',
           props: {},
           children: ['compId22']
         },

@@ -30,6 +30,10 @@ interface ProjectModel {
    * 剪切板，考虑到跨页面复制，所以设置为全局属性
    */
   clipboard: NodeInstance | null;
+  /**
+   * 全局域下自定义方法
+   */
+  methods: Record<string, IMethod>
 
   /**
    * 应用模型初始化方法
@@ -64,6 +68,10 @@ interface DocumentModel {
    */
   schema: IPage
   /**
+   * 页面名称
+   */
+  name: string
+  /**
    * 页面id
    */
   id: string;
@@ -83,6 +91,18 @@ interface DocumentModel {
    * 页面组件树
    */
   componentTree: Record<string, INode>;
+  /**
+   * 页面域下变量
+   */
+  data: Record<string, IData>
+  /**
+   * 页面生命周期
+   */
+  lifecycle: string;
+  /**
+   * 页面域下自定义方法
+   */
+  methods: Record<string, IMethod>
 
   /**
    * 页面模型初始化
@@ -99,7 +119,7 @@ interface DocumentModel {
   /**
    * 根据节点schema创建节点 / 创建空节点
    */
-  createNode: (nodeId: string, nodeSchema: INode) => NodeModal;
+  createNode: (nodeId: string, nodeSchema: Partial<INode>) => NodeModal;
   /**
    * 移除节点
    */
@@ -161,9 +181,17 @@ interface NodeModel<T> {
    */
   insertBefore: (newNode: T, existingNode: T) => void;
   /**
-   * 同 DOM.appendChild，仅isContainer === true时存在
+   * 在existingNode节点之后插入newNode，仅isContainer === true时存在
    */
-  appendChild: (nodeSchema: Record<string, INode>) => void;
+  insertAfter: (newNode: T, existingNode: T) => void;
+  /**
+   * 通过schema触发appendChild，同 DOM.appendChild，仅isContainer === true时存在
+   */
+  appendChildBySchema: (nodeSchema: Record<string, INode>) => void;
+  /**
+   * 通过node节点触发appendChild，同 DOM.appendChild，仅isContainer === true时存在
+   */
+  appendChild: (newNode: NodeInstance) => void;
   /**
    * 同 DOM.removeChild，仅isContainer === true时存在
    */

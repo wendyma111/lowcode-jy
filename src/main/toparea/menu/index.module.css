@@ -1,0 +1,16 @@
+.menu-icon:hover {
+  color: #1890ff;
+}
+
+.menu-icon {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.menu-item:hover {
+  color: #1890ff;
+}
+
+.menu-item {
+  width: 100px;
+}

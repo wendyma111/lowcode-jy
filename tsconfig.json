@@ -21,7 +21,8 @@
     "jsx": "react-jsx",
     "baseUrl": "./src",
     "typeRoots": ["node_modules/@types", "./src/typing"],
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
   },
   "include": [
     "src"

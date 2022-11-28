@@ -1,0 +1,29 @@
+.suspension-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  background: radial-gradient(rgba(0,0,0, 0.5), 50%, rgba(0,0,0,0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 9999;
+  font-size: 12px;
+  user-select: none;
+}
+
+.suspension-container:hover { 
+  background: radial-gradient(rgba(0,0,0, 0.7), 60%, rgba(0,0,0,0.2));
+}
+
+.iframe {
+  border: none;
+  width: 100vw;
+  height: 100vh;
+  overflow: scroll;
+}

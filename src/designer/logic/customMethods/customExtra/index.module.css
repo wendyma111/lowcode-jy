@@ -1,0 +1,23 @@
+.container {
+  margin-left: 30px;
+  margin-top: 30px;
+}
+
+.content-container {
+  margin-top: 20px;
+}
+
+.item-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 300px;
+}
+
+.item-label {
+
+}
+
+.item-content {
+  flex: 1
+}
