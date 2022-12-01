@@ -103,6 +103,14 @@ interface DocumentModel {
    * 页面域下自定义方法
    */
   methods: Record<string, IMethod>
+  /**
+   * 快照数组
+   */
+  snapShotData: IPage[]
+  /**
+   * 快照索引
+   */
+  snapShotIndex: number
 
   /**
    * 页面模型初始化
@@ -136,6 +144,18 @@ interface DocumentModel {
    * 监听当前修改节点的改变
    */
   onCurrentEditNodeChange: (fn: (currentEditNode: NodeInstance) => void) => () => void
+  /**
+   * 记录快照
+   */
+  recordSnapShot: () => void;
+  /**
+   * 触发重新渲染
+   */
+  rerender: (schema: IPage) => void;
+  /**
+   * 监听重新渲染
+   */
+  onRerender: (fn: () => void) => () => void;
 }
 
 interface NodeModel<T> {

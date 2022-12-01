@@ -59,9 +59,9 @@ interface IData {
 }
 
 interface INode {
-  componentName: string;
+  componentName?: string;
   parentId: string | null;
-  props: Record<string, any>;
+  props?: Record<string, any>;
   children: Array<string>;
 }
 

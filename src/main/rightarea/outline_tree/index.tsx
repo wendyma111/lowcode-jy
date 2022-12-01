@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState, PureComponent, MouseEvent } from 'react'
+import React, { Component, PureComponent, MouseEvent } from 'react'
 import { DownOutlined, RightOutlined } from '@ant-design/icons'
 import { getModel } from 'model'
 import NodeInstance from 'model/node'
@@ -6,15 +6,11 @@ import _ from 'lodash'
 import { IOutlineTreeState, IOutlineItemProps, IOutlineItemState } from './index.type'
 import styles from './index.module.css'
 import { observer } from 'mobx-react'
-
-class EmptyTree extends Component {
-  render() {
-    return <>empty</>
-  }
-}
+import Empty from '../empty'
 
 class OutlineTree extends Component<any, IOutlineTreeState> {
   clearCurrentDocumentChange: () => void
+  clearRerender!: () => void
 
   constructor(props: any) {
     super(props)
@@ -23,14 +19,20 @@ class OutlineTree extends Component<any, IOutlineTreeState> {
       currentDocument: projectModel.currentDocument,
     }
     this.clearCurrentDocumentChange = projectModel.onCurrentDocumentChange(doc => {
+      this.clearRerender?.()
+      this.clearRerender = doc.onRerender(() => this.forceUpdate())
       this.setState({
         currentDocument: doc
       })
     })
+    if (projectModel.currentDocument) {
+      this.clearRerender = projectModel.currentDocument.onRerender(() => this.forceUpdate())
+    }
   }
 
   componentWillUnMount() {
     this.clearCurrentDocumentChange?.()
+    this.clearRerender?.()
   }
 
   createElement(node: NodeInstance): React.ReactElement {
@@ -45,8 +47,7 @@ class OutlineTree extends Component<any, IOutlineTreeState> {
   render() {
     const { projectModel } = getModel()
     const { currentDocument } = this.state
-    if (_.isNil(currentDocument)) return <EmptyTree />
-    const { rootNode } = this.state.currentDocument as DocumentModel
+    const { rootNode } = currentDocument as DocumentModel
 
     return (
       <div

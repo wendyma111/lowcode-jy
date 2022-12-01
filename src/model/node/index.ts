@@ -3,7 +3,6 @@ import { EventEmitter } from 'events'
 import { ReactInstance } from 'react'
 import { getModel } from 'model'
 import { findDOMNode } from 'react-dom'
-import { isConstructorDeclaration } from 'typescript'
 
 const props_change_event = 'PropsChange'
 const children_change_event = 'ChildrenChange'
@@ -106,7 +105,7 @@ class NodeInstance implements NodeModel<NodeInstance> {
   private load(nodeId: NodeId, nodeSchema: INode) {
     this.id = nodeId
     this._document.addNode(this)
-    this._componentName = nodeSchema.componentName
+    this._componentName = nodeSchema?.componentName as string
     this._schema = nodeSchema
 
     const defaultProps = {}
@@ -162,6 +161,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
     this._props = newProps
 
     this._emitter.emit(props_change_event, props)
+
+    this.document.recordSnapShot()
   }
 
   getPropValue(propName: string) {
@@ -175,6 +176,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
     _.set(this._props, propName?.split?.('.'), propValue)
 
     this._emitter.emit(props_change_event, modifedProps)
+
+    this.document.recordSnapShot()
   }
 
   onPropChange(fn: (modifedProps: Record<string, any>) => void) {
@@ -193,6 +196,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
       this._children.splice(index, 0, newNode)
       this.document.addNode(newNode)
       this._emitter.emit(children_change_event, [...this._children])
+
+      this.document.recordSnapShot()
     }
   }
 
@@ -204,6 +209,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
       this._children.splice(index + 1, 0, newNode)
       this.document.addNode(newNode)
       this._emitter.emit(children_change_event, [...this._children])
+
+      this.document.recordSnapShot()
     }
   }
 
@@ -215,6 +222,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
     this.document.createNode(rootNodeId, rootNodeSchema)
     this.children.push(this.document.getNodeById(rootNodeId))
     this._emitter.emit(children_change_event, [...this._children])
+
+    this.document.recordSnapShot()
   }
 
   private _appendChild(newNode: NodeInstance) {
@@ -222,6 +231,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
     this._children.push(newNode)
     this.document.addNode(newNode)
     this._emitter.emit(children_change_event, [...this._children])
+
+    this.document.recordSnapShot()
   }
 
   private _removeChild(nodeChild: NodeInstance) {
@@ -233,6 +244,8 @@ class NodeInstance implements NodeModel<NodeInstance> {
       _.forEach(this.descendant, (descendantNode) => this.document.removeNode(descendantNode.id))
       // 移除该节点
       this.document.removeNode(nodeChild.id)
+
+      this.document.recordSnapShot()
     }
   }
 

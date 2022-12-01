@@ -4,6 +4,7 @@ import Logo from './logo'
 import Menu from './menu'
 import PreviewButton from './previewbutton'
 import SchemaButton from './schemabutton'
+import Auxiliary from './auxiliary'
 
 class TopArea extends Component {
 
@@ -13,6 +14,7 @@ class TopArea extends Component {
         <Logo />
         <Menu />
       </div>
+      <Auxiliary />
       <div className={styles.right}>
         <SchemaButton />
         <PreviewButton />

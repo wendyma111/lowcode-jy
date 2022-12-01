@@ -61,7 +61,7 @@ function StyleSetter() {
   }
 
   if (!currentEditNode) {
-    return <Empty />
+    return <Empty text="请先选择组件" />
   }
 
   return (

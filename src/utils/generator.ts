@@ -13,14 +13,11 @@ export const generateEmptyPageSchema: (name?: string) => IPage = (name?: string)
   const rootNodeId = generateKey('node')
   const emptyPageSchema = {
     name: name ?? '空页面',
-    css: '',
     data: {},
     lifecycle: PAGE_LIFECYCLE_DEFAULT_VALUE, // @todo 待补充默认声明周期模板代码
     componentTree: {
       [rootNodeId]: {
-        componentName: 'Container',
         parentId: null,
-        props: {},
         children: []
       }
     }

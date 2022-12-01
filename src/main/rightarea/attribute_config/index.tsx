@@ -136,7 +136,7 @@ function AttributeConfig() {
   }
 
   if (!currentEditNode) {
-    return <Empty />
+    return <Empty text="请先选择组件" />
   }
 
   const BaseConfig = _.map(currentEditNode.getComponentMeta().settings, (setting) => {

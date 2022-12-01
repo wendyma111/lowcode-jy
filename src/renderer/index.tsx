@@ -137,6 +137,24 @@ class rendererFactory {
   static designFactory = () => {
     class Renderer extends PureComponent<IProps> {
       componentConstructor!: React.FunctionComponent | React.ComponentClass
+      clear!: () => void
+
+      constructor(props: IProps) {
+        super(props)
+
+        this.clear = props.documentModel.onRerender(() => this.forceUpdate())
+      }
+
+      componentDidUpdate(prevProps: Readonly<IProps>): void {
+        if (prevProps.documentModel !== this.props.documentModel) {
+          this.clear?.()
+          this.clear = this.props.documentModel.onRerender(() => this.forceUpdate())
+        }
+      }
+
+      componentWillUnmount(): void {
+        this.clear?.()
+      }
 
       onGetRef(ref: React.ReactInstance, node: NodeInstance) {
         node.mountRef(ref)

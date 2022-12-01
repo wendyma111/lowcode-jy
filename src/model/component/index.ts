@@ -1,15 +1,13 @@
 import _ from "lodash"
-import { getModel } from 'model'
 
 class ComponentMeta implements ComponentMetaModel {
-  constructor(componentsMap: Record<string, Partial<ComponentMetaInfo>>) {
-    const { components } = getModel()
-    _.forEach(componentsMap, (componentInfo, componentName) => {
+  constructor(components: Record<string, { component: React.FunctionComponent | React.ComponentClass, config: Component }>) {
+    _.forEach(components, ({ component, config }, componentName) => {
       return this._components.set(
         componentName,
         {
-          ...componentInfo,
-          constructor: components[componentName]
+          ...config,
+          constructor: component
         }
       )
     })

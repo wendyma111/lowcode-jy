@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { generateKey, generateEmptyPageSchema } from 'utils/generator'
 import { EventEmitter } from 'events'
 import NodeInstance from '../node'
-import { makeObservable, observable, action, toJS, autorun } from 'mobx'
+import { makeObservable, observable, action, toJS, runInAction } from 'mobx'
 import { PAGE_LIFECYCLE_DEFAULT_VALUE } from 'constant'
 
 const currentEditNode_change_event = 'currentEditNodeChange'
@@ -13,13 +13,17 @@ class Document implements DocumentModel {
     const newPageSchema = pageSchema ?? generateEmptyPageSchema()
 
     this.load(newPageId, newPageSchema)
+    this.recordSnapShot()
 
     makeObservable(this, {
       data: observable,
       currentEditNode: observable.ref,
+      snapShotData: observable.ref,
+      snapShotIndex: observable,
       setData: action,
       deleteData: action,
-      setCurrentEditNode: action
+      setCurrentEditNode: action,
+      recordSnapShot: action
     })
   }
 
@@ -30,6 +34,10 @@ class Document implements DocumentModel {
   lifecycle: string = PAGE_LIFECYCLE_DEFAULT_VALUE
 
   methods: Record<string, IMethod> = {}
+
+  snapShotData: IPage[] = []
+
+  snapShotIndex: number = -1
 
   setData = (data: Record<string, IData>) => {
     Object.assign(this.data, data)
@@ -70,7 +78,10 @@ class Document implements DocumentModel {
     return this._rootNode
   }
 
-  setCurrentEditNode(nodeId: NodeId) {
+  setCurrentEditNode(nodeId: NodeId | null) {
+    if (nodeId === null) {
+      return this.currentEditNode = null
+    }
     this.currentEditNode = this.getNodeById(nodeId)
     this._emitter.emit(currentEditNode_change_event, this.currentEditNode)
   }
@@ -93,6 +104,20 @@ class Document implements DocumentModel {
         return
       }
     })
+  }
+
+  rerender(schema: IPage) {
+    this.nodes = new Map()
+    this.setCurrentEditNode(null)
+    this.load(this.id, schema)
+
+    this._emitter.emit('rerender')
+  }
+
+  onRerender(fn: () => void) {
+    this._emitter.on('rerender', fn)
+
+    return () => this._emitter.off('rerender', fn)
   }
 
   createNode(nodeId: NodeId, nodeSchema: Partial<INode>) {
@@ -131,6 +156,23 @@ class Document implements DocumentModel {
     if (!this.nodes.has(node.id)) {
       this.nodes.delete(node.id)
     }
+  }
+
+  // 记录快照
+  recordSnapShot = () => {
+    const newSnapShotIndex = this.snapShotIndex + 1 > 10 ? 10 : this.snapShotIndex + 1 
+
+    // 最多存储10次记录
+    const newSnapShotData = [
+      ...this.snapShotData.slice(
+        this.snapShotIndex + 1 - 10 <= 0 ? 0 : this.snapShotIndex + 1 - 10,
+        this.snapShotIndex + 1
+      ),
+      this.schema
+    ]
+    
+    this.snapShotData = newSnapShotData as IPage[]
+    this.snapShotIndex = newSnapShotIndex
   }
 }
 
