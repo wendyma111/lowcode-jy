@@ -10,13 +10,10 @@
  * 2、_postMessage：基于window.postMessage进行包装，为解决单次发消息可能出现的消息丢失问题
  */
 import _ from 'lodash';
-import React from 'react';
 import { observable, action, makeObservable, reaction, IReactionDisposer } from 'mobx'
-import { createRoot } from 'react-dom/client';
 import { clone } from './utils';
 import globalWhitelist from './globalWhitelist';
 import { IOptions, IPostMessageEvent, Ctx, IMessage } from './index.type';
-import IframeComp from './iframeContent'
 
 class LowcodeExecuteCtxFatory {
   _id!: string;
@@ -46,7 +43,7 @@ class LowcodeExecuteCtxFatory {
   }
 
   static _whitelist = globalWhitelist;
-  
+
   delete() {
     // 批量清理监听
     this.clearReactions.forEach(clear => clear?.())
@@ -73,9 +70,9 @@ class LowcodeExecuteCtxFatory {
      *  1、props修改时
      *  2、组件卸载时
      *  3、当前页面被删除时
-     */ 
+     */
     if (type === 'auto') {
-      const disposer: IReactionDisposer= reaction(
+      const disposer: IReactionDisposer = reaction(
         () => this._ctxConfig,
         () => {
           this.autoExecute(code, 'once', callback)
@@ -134,6 +131,8 @@ class LowcodeExecuteCtxFatory {
     };
 
     window.addEventListener('message', onMessage);
+
+    this._iframe.contentWindow.postMessage(finalArg);
     const interval = setInterval(() => {
       this._iframe.contentWindow.postMessage(finalArg);
     }, 700);
@@ -167,41 +166,65 @@ class LowcodeExecuteCtxFatory {
     return commonCtx;
   }
 
-  create:(conf: any, options?: IOptions) => Promise<Ctx> | void = (conf: any, options?: IOptions) => {
+  create: (conf: any, options?: IOptions) => Promise<Ctx> | void = (conf: any, options?: IOptions) => {
     this._timeout = options?.timeout ?? this._timeout;
     if (this._id === undefined) {
       const id = String(Math.random());
       this._id = id;
 
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const el = document.getElementById('_lowCode_iframe_');
         if (!el) {
-          const iframe = document.createElement('iframe');
-          (iframe as any).style = 'display:none;';
-          iframe.setAttribute('id', '_lowCode_iframe_');
-          iframe.setAttribute('src', '/lowcode');
-          iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-          document.body.appendChild(iframe);
+          const iframe = document.createElement('iframe') as any
+          iframe.style = 'display: none'
+          iframe.id="_lowCode_iframe_"
+          iframe.sandbox="allow-same-origin allow-scripts"
+          document.body.appendChild(iframe)
+          
+          iframe.contentWindow?.addEventListener('message', (event: any) => {
+            const { data: { type, id, data, hash } } = event
+            switch (type) {
+              case 'lowCode_eval': {
+                // eslint-disable-next-line no-new-func
+                try {
+                  const resolver = new Function(`
+                    return function(context) {
+                      with(context) {
+                        try {
+                          return (${data})()
+                        } catch(e) {
+                          console.log(e)
+                        }
+                      }
+                    }
+                  `)
 
-          iframe.onload = () => {
-            const root = iframe.contentWindow?.document.createElement('div')
-            iframe.contentWindow?.document.documentElement.appendChild(root as HTMLDivElement)
-            
-            const reactRoot = createRoot(root as HTMLDivElement)
-            reactRoot.render(React.createElement(IframeComp))
-            
-            const config = clone(conf, iframe.contentWindow);
-            this._iframe = iframe;
-            this._setCtxConfig(config)
+                  const res = resolver()((iframe.contentWindow as Window & typeof globalThis & { ctx: any })?.ctx?.[id] ?? {})
+                  iframe.contentWindow?.parent.postMessage({ type: 'feedback_result', id, hash, data: res })
+                } catch (e) {
+                  iframe.contentWindow?.parent.postMessage({ type: 'feedback_result', id, hash, data: null })
+                }
+                break
+              }
 
-            const commonCtx = this.generateCtx(config);
-            _.set(iframe.contentWindow as Window, ['ctx', id], commonCtx);
-            resolve({
-              autoExecute: this.autoExecute.bind(this),
-              updateCtx: this.updateCtx.bind(this),
-              delete: this.delete.bind(this)
-            });
-          };
+              default: {
+                break
+              }
+            }
+          })
+
+          const config = clone(conf, iframe.contentWindow);
+          this._iframe = iframe;
+          this._setCtxConfig(config)
+
+          const commonCtx = this.generateCtx(config);
+          _.set(iframe.contentWindow as Window, ['ctx', id], commonCtx);
+          resolve({
+            autoExecute: this.autoExecute.bind(this),
+            updateCtx: this.updateCtx.bind(this),
+            delete: this.delete.bind(this)
+          });
+
         } else {
           const config = clone(conf, (el as HTMLIFrameElement).contentWindow);
           this._iframe = el;
