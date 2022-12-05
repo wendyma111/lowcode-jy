@@ -9,7 +9,7 @@ function PreviewButton() {
   const preparePreview = useCallback(() => {
     const { projectModel } = getModel()
     const currentPageId = projectModel.currentDocument?.id ?? Array.from(projectModel.documents)[0][0]
-    navigate(`/preview/${currentPageId}/${window.location.search}`)
+    navigate(`/lowcode-jy/preview/${currentPageId}/${window.location.search}`)
   }, [])
 
   return (

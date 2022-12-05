@@ -32,7 +32,7 @@ export function SuspensionButton(
     iframe && iframe.contentDocument?.removeEventListener('mouseup', handleMouseUp)
 
     if (Math.abs(e.clientX - initialPosition.current.x) < 10 && Math.abs(e.clientY - initialPosition.current.y) < 10) {
-      gobackToEditor(`/${window.location.search}`)
+      gobackToEditor(`/lowcode-jy/${window.location.search}`)
     }
   }, [iframe])
 
@@ -67,7 +67,7 @@ function Preview() {
   const setIframe = useRef<Dispatch<SetStateAction<HTMLIFrameElement | null>>>()
 
   const navigate = useCallback((path: string) => {
-    originNavigate(`/preview/${path}`)
+    originNavigate(`/lowcode-jy/preview/${path}`)
   }, [])
 
   const mountPreview = (ref: HTMLIFrameElement | null) => {

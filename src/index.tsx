@@ -82,11 +82,15 @@ function loadScript(srcs: Record<string, string>) {
 
       const route = createBrowserRouter([
         {
-          path: '/',
+          path: '/lowcode-jy/',
           element: <Main />
         },
+        // {
+        //   path: '/',
+        //   element: <Main />
+        // },
         {
-          path: '/preview/:pageId',
+          path: '/lowcode-jy/preview/:pageId',
           element: <PreviewComp />
         }
       ])
