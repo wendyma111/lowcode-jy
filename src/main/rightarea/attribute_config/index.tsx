@@ -122,37 +122,42 @@ function AttributeConfig() {
 
   useEffect(() => {
     if (currentEditNode) {
+      setNodeProps(currentEditNode.getProps())
+
       const clear = currentEditNode.onPropChange(() => {
         setNodeProps(currentEditNode.getProps())
       })
 
       return clear
     }
-  }, [])
+  }, [currentEditNode])
 
   const handleChangeProp = (prop: string, value: any) => {
-    if (!currentEditNode) return
-    currentEditNode.setPropValue(prop, value)
+    const cur = getModel().projectModel.currentDocument?.currentEditNode
+    if (!cur) return
+    cur.setPropValue(prop, value)
   }
 
   if (!currentEditNode) {
     return <Empty text="请先选择组件" />
   }
 
-  const BaseConfig = _.map(currentEditNode.getComponentMeta().settings, (setting) => {
-    return setters[setting.type] ? React.createElement(
-      setters[setting.type],
-      {
-        key: setting.settingName,
-        onChange: (v: any) => handleChangeProp(setting.settingName, v),
-        label: setting.label,
-        value: nodeProps[setting.settingName],
-        extra: (
-          <BindData node={currentEditNode} targetProp={setting.settingName} />
-        )
-      }
-    ) : null
-  })
+  const BaseConfig = _.keys( _.omit(currentEditNode.getComponentMeta().settings, ['style'])).length > 0
+    ? _.map(currentEditNode.getComponentMeta().settings, (setting) => {
+        return setters[setting.type] ? React.createElement(
+          setters[setting.type],
+          {
+            key: setting.settingName,
+            onChange: (v: any) => handleChangeProp(setting.settingName, v),
+            label: setting.label,
+            value: nodeProps[setting.settingName],
+            extra: (
+              <BindData node={currentEditNode} targetProp={setting.settingName} />
+            )
+          }
+        ) : null
+      })
+    : '该组件暂无基础属性'
 
   return (
     <>

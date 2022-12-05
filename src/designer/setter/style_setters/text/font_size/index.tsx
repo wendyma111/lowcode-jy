@@ -1,13 +1,16 @@
 import React from 'react'
+import _ from 'lodash'
 import { InputNumber } from 'antd'
 import StyleSetterLayout from 'designer/setter/base'
 import { IProps } from 'designer/setter/base.type'
 
 function FontSize(props: IProps) {
-  const { value = 16, onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.fontSize'
+  const value = _.get(nodeProps, prop)
 
   const handleChange = (v: any) => {
-    onChange?.('style.fontSize', v)
+    onChange?.(prop, v)
   }
   
   return (

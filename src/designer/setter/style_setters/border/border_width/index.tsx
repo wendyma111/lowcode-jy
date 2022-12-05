@@ -1,14 +1,17 @@
 import React from 'react'
+import _ from 'lodash'
 import { Slider, InputNumber, Row, Col } from 'antd'
 import { IProps } from 'designer/setter/base.type'
 import StyleSetterLayout from 'designer/setter/base'
 import styles from './index.module.css'
 
 function BorderWidth(props: IProps) {
-  const { value = 0, onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.borderWidth'
+  const value = _.get(nodeProps, prop)
 
   const handleChange = (v: any) => {
-    onChange?.('style.borderWidth', v)
+    onChange?.(prop, v)
   }
 
   return (

@@ -1,27 +1,33 @@
-import React, { ClassType, PureComponent } from 'react'
+import React, { PureComponent } from 'react'
 import _, { isNil } from 'lodash'
-import { when, IReactionDisposer, autorun } from 'mobx'
+import { when, IReactionDisposer } from 'mobx'
 import { getModel } from 'model'
 import styles from './simulator.module.css'
 import NodeInstance from 'model/node'
 import { IState, IProps } from './simulator.type'
 import { builtInApis } from 'designer/logic/customMethods'
-import { IPreviewPage } from '../index'
+
+interface IPreviewPage {
+  $state: Record<string, any>;
+  $api: Record<string, any>;
+  lowcodeExecute: (code: string, $state: Record<any, any>, $api: Record<any, any>) => any;
+}
 
 /**
  * 预览模式下 组件渲染
  * - 无需考虑 props、children更新情况
  */
 export class PreviewContent extends PureComponent<IProps & IPreviewPage> {
-    
+
   // 解析绑定变量的prop，预览模式在iframe中加载，故可以直接使用new Function
   parseProps(props: Record<string, any>) {
-    const { $state, $api } = this.props
+    const { $state, $api, lowcodeExecute } = this.props
     const finalProps: Record<string, any> = {}
     for (const prop in props) {
       let value = props[prop]
       if (props[prop]?.type === 'JSExpression') {
-        value = new Function('$state', '$api', 'return ' + props[prop].value)($state, $api)
+        // value = new Function('$state', '$api', 'return ' + props[prop].value)($state, $api)
+        value = lowcodeExecute('return ' + `(${props[prop].value})`, $state, $api)
       }
       if (props[prop]?.type === 'JSFunction') {
         const { path, extra } = props[prop]
@@ -29,7 +35,17 @@ export class PreviewContent extends PureComponent<IProps & IPreviewPage> {
           return api.path === path
         })
         if (selectedBuiltInApi) {
-          // @todo 内置事件
+          switch(path) {
+            case '$api.dispatch': {
+              value = () => { $api.dispatch(extra.variablePath.replace('$state.', ''), extra.value) }
+              break
+            }
+            case '$api.navigate': {
+              value = () => { $api.navigate(extra.targetPageId) }
+              break
+            }
+            default: break
+          }
         } else {
           // 自定义事件
           value = _.get($api, path.replace('$api.', ''))
@@ -47,7 +63,7 @@ export class PreviewContent extends PureComponent<IProps & IPreviewPage> {
 
     // 虚拟根节点渲染
     if (node === node.document.rootNode) {
-      return children.map(child => engine.createElement(child))
+      return children.map((child: NodeInstance) => engine.createElement(child))
     }
 
     return engine.renderContent(node, this.parseProps(node.getProps()), children)
@@ -93,6 +109,7 @@ export class SimulatorContent extends PureComponent<IProps, IState> {
   }
 
   parseProps = (originProps: Record<string, any>) => {
+    const { node } = this.props
     const { projectModel } = getModel()
     const finalProps: Record<string, any> = {}
 
@@ -100,14 +117,14 @@ export class SimulatorContent extends PureComponent<IProps, IState> {
       // 清理低代码执行监听
       this.disposeMap?.[key]?.()
 
-      // @todo 重新梳理一下此处逻辑
       if (value?.type === 'JSExpression') {
         // ctxDesignMode为异步生成的，所以需要进行监听
         when(
-          () => !!projectModel?.designer?.logic?.ctxDesignMode,
+          () => !!projectModel?.designer?.logic?.ctxDesignMode[node.document.id],
           () => {
-            if (isNil(projectModel?.designer?.logic?.ctxDesignMode)) return
-            this.disposeMap[key] = projectModel?.designer?.logic?.ctxDesignMode?.autoExecute?.(
+            const lowcodeExecute = projectModel?.designer?.logic?.ctxDesignMode[node.document.id]
+            if (isNil(lowcodeExecute)) return
+            this.disposeMap[key] = lowcodeExecute?.autoExecute?.(
               `() => ${value.value}`,
               'auto',
               (newValue) => {
@@ -166,6 +183,7 @@ export class SimulatorContent extends PureComponent<IProps, IState> {
 
     return (
       <div
+        style={{ display: compProps?.style?.display ?? 'block' }}
         data-nodeid={this.node.id}
         className={styles['simulator-container']}
         draggable

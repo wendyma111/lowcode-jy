@@ -5,6 +5,7 @@ export interface IOptions {
 export interface Ctx {
   updateCtx?: (conf: any) => void;
   autoExecute?: (code: string, type: 'once' | 'auto', callback?: (newValue: any) => void) => any;
+  delete: () => void;
 }
 
 export interface IPostMessageEvent {

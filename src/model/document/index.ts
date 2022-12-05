@@ -27,7 +27,7 @@ class Document implements DocumentModel {
     })
   }
 
-  name: string = ''
+  name = ''
 
   data: Record<string, IData> = {}
 
@@ -37,7 +37,7 @@ class Document implements DocumentModel {
 
   snapShotData: IPage[] = []
 
-  snapShotIndex: number = -1
+  snapShotIndex = -1
 
   setData = (data: Record<string, IData>) => {
     Object.assign(this.data, data)

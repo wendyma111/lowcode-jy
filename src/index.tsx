@@ -38,7 +38,7 @@ function loadScript(srcs: Record<string, string>) {
   /**
    * 兼容本地进行组件调试
    */
-  let debugComponentId:string = ''
+  let debugComponentId = ''
 
   const search = self.location.search
 
@@ -98,6 +98,10 @@ function loadScript(srcs: Record<string, string>) {
 }
 
 loadScript({
-  'Button_component': 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Button.240884efa8454dedeafe.js',
-  'Button_config': 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Button.config.c7e89bee7b1c3bdfbf95.js'
+  Button_component: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Button.a7e4aacfb3c0934251bd.js',
+  Button_config: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Button.config.9e4b7e9f540c1b8f72b7.js',
+  Container_component: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Container.2a92858c0bf516234c8e.js',
+  Container_config: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Container.config.f070c8f308c8a77f30a2.js',
+  Text_component: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Text.89c71152c20b098f6777.js',
+  Text_config: 'https://lowcode-material-1301685852.cos.ap-nanjing.myqcloud.com/Text.config.298cafd00a4614fcc312.js'
 })

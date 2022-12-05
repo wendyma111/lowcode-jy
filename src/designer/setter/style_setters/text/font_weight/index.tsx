@@ -1,13 +1,16 @@
 import React from 'react'
+import _ from 'lodash'
 import { Select } from 'antd'
 import { IProps } from 'designer/setter/base.type'
 import StyleSetterLayout from 'designer/setter/base'
 
 function FontWeight(props: IProps) {
-  const { value = 400, onChange } = props
-
+  const { nodeProps, onChange } = props
+  const prop = 'style.fontWeight'
+  const value = _.get(nodeProps, prop)
+  
   const handleChange = (v: number) => {
-    onChange?.('style.fontWeight', v)
+    onChange?.(prop, v)
   }
 
   return (

@@ -49,7 +49,7 @@ function DataCard(props: IProps) {
     if (!data) return 'undefined'
     const { defaultValue: value, type } = data
 
-    let displayValue: string = ''
+    let displayValue = ''
 
     switch (type) {
       case 'string': {
@@ -85,7 +85,6 @@ function DataCard(props: IProps) {
     form
       .validateFields()
       .then((value) => {
-        // @todo
         const params: Partial<IData> = {}
         const { key, desc, defaultValue, type, scope } = value
 

@@ -1,7 +1,11 @@
 import React, { Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useState, useRef } from 'react'
 import rendererFactory from 'renderer'
+import _ from 'lodash'
+import { toJS, observable, runInAction, makeObservable } from 'mobx';
 import { useNavigate, useParams } from 'react-router-dom'
 import { createRoot } from 'react-dom/client';
+import { clone } from 'designer/logic/lowcodeExecute/utils'
+import { getModel } from 'model'
 import styles from './index.module.css'
 
 export function SuspensionButton(
@@ -28,7 +32,7 @@ export function SuspensionButton(
     iframe && iframe.contentDocument?.removeEventListener('mouseup', handleMouseUp)
 
     if (Math.abs(e.clientX - initialPosition.current.x) < 10 && Math.abs(e.clientY - initialPosition.current.y) < 10) {
-      gobackToEditor('/')
+      gobackToEditor(`/${window.location.search}`)
     }
   }, [iframe])
 
@@ -48,8 +52,7 @@ export function SuspensionButton(
     <div
       style={{ transform: `translate(${x - 25}px, ${y - 25}px)` }}
       onMouseDown={handleMouseDown}
-      // @ts-ignore
-      onMouseUp={handleMouseUp}
+      onMouseUp={handleMouseUp as any}
       className={styles['suspension-container']}
     >
       返回
@@ -59,6 +62,7 @@ export function SuspensionButton(
 
 function Preview() {
   const params = useParams()
+  const storeRef = useRef<any>(null)
   const originNavigate = useNavigate()
   const setIframe = useRef<Dispatch<SetStateAction<HTMLIFrameElement | null>>>()
 
@@ -67,16 +71,67 @@ function Preview() {
   }, [])
 
   const mountPreview = (ref: HTMLIFrameElement | null) => {
+    /**
+     * 在iframe中渲染返回按钮
+     */
     setIframe.current?.(ref)
-    
+
+    /**
+     * 生成store
+     */
+    if (!storeRef.current && ref) {
+      const { projectModel } = getModel()
+      class Store {
+        constructor() {
+          makeObservable(this, {
+            $state: observable.ref,
+          })
+        }
+
+        $state = clone(
+          projectModel.designer.logic.$state,
+          (ref as HTMLIFrameElement).contentWindow
+        )
+
+        $api = {
+          dispatch: (path: string, value: any) => {
+            runInAction(() => {
+              try {
+                /**
+                 * 由于低代码模块统一使用代码字符串，mobx无法确定依赖关系
+                 * 故调用dispatch时改变$state引用，使应用整体重新渲染
+                 */
+                this.$state = _.assign({}, _.set(this.$state, path, value))
+              } catch(e) {
+                console.error(`dispatch调用报错 ${e}`)
+              }
+            })
+          }
+        }
+
+        add$api(path: string, value: any) {
+          _.set(this.$api, path, value)
+        }
+      }
+
+      storeRef.current = new Store()
+    }
+
     if (ref) {
       console.clear()
       console.log('%c ---------- 预览模式开启 ----------', 'background: green;color: #fff')
       
-      const root = ref.contentDocument?.createElement('div')
+      const preRoot = ref.contentDocument?.getElementById('root')
+      if (preRoot) {
+        preRoot?.parentNode?.removeChild?.(preRoot)
+      }
+
+      const root = ref.contentDocument?.createElement('div') as HTMLDivElement
+      root.id = 'root'
       ref.contentDocument?.body.appendChild(root as HTMLDivElement)
+
       const reactRoot = createRoot(root as HTMLDivElement)
-      const Preview = rendererFactory.previewFactory()
+      const Preview = rendererFactory.previewFactory(ref as HTMLIFrameElement, storeRef.current)
       reactRoot.render(React.createElement(Preview, { navigate, pageId: params.pageId as string }))
     } else {
       console.clear()

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Collapse } from 'antd';
 import styleSetters from 'designer/setter/style_setters'
 import { getModel } from 'model'
@@ -44,9 +44,11 @@ function StyleSetter() {
 
   const currentEditNode: NodeInstance = getModel().projectModel.currentDocument?.currentEditNode
   const [nodeProps, setNodeProps] = useState(currentEditNode?.getProps?.() ?? {})
-  
+
   useEffect(() => {
     if (currentEditNode) {
+      setNodeProps(currentEditNode.getProps())
+
       const clear = currentEditNode.onPropChange(() => {
         setNodeProps(currentEditNode.getProps())
       })
@@ -56,8 +58,9 @@ function StyleSetter() {
   }, [currentEditNode])
 
   const handleChangeProp = (prop: string, value: any) => {
-    if (!currentEditNode) return
-    currentEditNode.setPropValue(prop, value)
+    const cur = getModel().projectModel.currentDocument?.currentEditNode
+    if (!cur) return
+    cur.setPropValue(prop, value)
   }
 
   if (!currentEditNode) {
@@ -70,9 +73,13 @@ function StyleSetter() {
         source.current.map((item) => (
           <Panel style={{ background: '#fff' }} header={item.header} key={item.key}>
             {
-              item.content?.length 
+              item.content?.length
                 ? item.content.map(
-                  (el, index) => React.createElement(el, { key: index, onChange: handleChangeProp, nodeProps })
+                  (el, index) => React.createElement(el, { 
+                    key: index,
+                    onChange: handleChangeProp,
+                    nodeProps
+                  })
                 )
                 : null
             }

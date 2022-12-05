@@ -10,11 +10,11 @@ import Project from 'model/project'
 
 const Renderer = rendererFactory.designFactory()
 
-class Simulator extends Component<null, { contextMenu_mouseEvent: React.MouseEvent | null, currentDocument: DocumentModel }> {
+class Simulator extends Component<Record<string, never>, { contextMenu_mouseEvent: React.MouseEvent | null, currentDocument: DocumentModel }> {
   componentMeta!: ComponentMetaModel
   projectModel!: Project
   preDetectingDom!: Element
-  detectingClassName: string = '_detecting'
+  detectingClassName = '_detecting'
 
   clear!: () => void
 
@@ -38,8 +38,7 @@ class Simulator extends Component<null, { contextMenu_mouseEvent: React.MouseEve
 
   handleChoose(e: MouseEvent) {
     const reactFiberKey = _.keys(e.target).find(item => item.startsWith('__reactFiber')) as string
-    // @ts-ignore
-    const fiberNode = e.target[reactFiberKey]
+    const fiberNode = (e.target as any)[reactFiberKey]
     const targetNodeId = findNodeIdFromFiber(fiberNode)
     if (this.state.currentDocument && targetNodeId) {
       clearClassName(this.preDetectingDom, this.detectingClassName);
@@ -54,8 +53,7 @@ class Simulator extends Component<null, { contextMenu_mouseEvent: React.MouseEve
     clearClassName(this.preDetectingDom, this.detectingClassName)
 
     const reactFiberKey = _.keys(e.target).find(item => item.startsWith('__reactFiber')) as string
-    // @ts-ignore
-    const fiberNode = e.target[reactFiberKey]
+    const fiberNode = (e.target as any)[reactFiberKey]
     const targetNodeId = findNodeIdFromFiber(fiberNode)
     
     if (this.state.currentDocument) {

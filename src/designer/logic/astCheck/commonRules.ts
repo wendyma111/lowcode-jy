@@ -10,9 +10,8 @@ import { Node as AstNode, SourceLocation } from 'acorn'
  * 规则：禁止写死url，可能会导致跨域问题
  * @param node ast节点
  */
-const rule_urlForbidden = (node: AstNode) => {
+const rule_urlForbidden = (node: any) => {
   if (node?.type === 'Literal') {
-    // @ts-ignore
     if (typeof node?.value === 'string' && (node?.value.startsWith('http://') || node?.value.startsWith('https://'))) {
       const loc = node.loc as SourceLocation
       const { start, end } = loc

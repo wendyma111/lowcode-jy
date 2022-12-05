@@ -8,7 +8,7 @@ import styles from './index.module.css'
 const { Panel } = Collapse;
 
 function Card(props: { content: ComponentMetaInfo }) {
-  const { screenShot, label, componentName } = props?.content
+  const { screenShot, label, componentName } = props?.content ?? {}
   const { projectModel } = getModel()
 
   const handleDragStart = (e: DragEvent) => {

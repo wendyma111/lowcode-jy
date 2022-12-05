@@ -13,6 +13,7 @@ import AstCheck from '../astCheck'
 import { AstCheckType } from '../astCheck/index.type'
 import { IProps, IMarker, IEditor, IModel } from './index.type'
 import styles from './index.module.css'
+import lowcodeInstruction from '../lowcodeInstruction'
 
 function BasicalLowCodeEditor(props: IProps) {
   const { rules = [], width, height } = props
@@ -68,7 +69,7 @@ function BasicalLowCodeEditor(props: IProps) {
   }
 
   const handleCheckInstruction = () => {
-    // @todo 打开低代码介绍
+    lowcodeInstruction()
   }
 
   return (

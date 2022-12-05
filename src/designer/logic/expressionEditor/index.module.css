@@ -1,0 +1,23 @@
+.container {
+  width: 950px;
+  height: 495px;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment {
+  display: flex;
+  flex-direction: row;
+  background: #d4e3fc;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.comment-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+  font-size: 12px;
+  line-height: 24px;
+}

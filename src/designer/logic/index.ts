@@ -13,14 +13,8 @@ import LowcodeExecuteCtxFatory from './lowcodeExecute'
 import { Ctx } from './lowcodeExecute/index.type'
 import Project from "model/project"
 import { IFile } from './index.type'
-import { resolve } from 'path'
 
 class Logic {
-  /**
-   * 低代码执行上下文生成器
-   */
-  private _design_ctx = new LowcodeExecuteCtxFatory()
-  private _preview_ctx = new LowcodeExecuteCtxFatory()
 
   constructor(projectModel: Project) {
     /**
@@ -28,14 +22,12 @@ class Logic {
      */
     makeObservable(this, {
       ctxDesignMode: observable.ref,
-      _setCtxDesignMode: action,
+      _addCtxDesignMode: action,
       lifeCycleFiles: observable.ref,
-      _initLifecycle: action,
-      ctxPeviewMode: observable.ref,
-      _setCtxPreviewMode: action,
+      initLifecycle: action,
     })
 
-    this._initLifecycle(projectModel)
+    this.initLifecycle(projectModel)
 
     // 监听自定义方法文件的改动
     autorun(() => {
@@ -56,7 +48,7 @@ class Logic {
 
     // 监听数据源的修改
     autorun(() => {
-      const newState = {}
+      const newState: any = {}
       _.forEach(projectModel?.data ?? {}, (value, key) => {
         _.set(newState, `global.${key}`, value.defaultValue)
       })
@@ -65,23 +57,34 @@ class Logic {
           _.set(newState, `${_key}.${key}`, value.defaultValue)
         })
       }
-      
-      if (!_.isEqual(newState, this.$state)) {
-        this.$state = newState
 
-        if (this.ctxDesignMode) {
-          // 更新上下文
-          (this.ctxDesignMode as Ctx)?.updateCtx?.({ $state: this.$state  ?? {} })
+      /**
+       * 遍历页面，生成不同页面的低代码执行器
+       */
+      for (const [pageId, doc] of projectModel.documents) {
+        const newStateByScope = { global: newState.global, [pageId]: newState[pageId] }
+
+        if (this.ctxDesignMode[pageId]) {
+          const curStateByScope = { global: this.$state.global, [pageId]: this.$state[pageId] }
+          
+          if (!_.isEqual(newStateByScope, curStateByScope)) {
+            this.ctxDesignMode[pageId].updateCtx?.({ $state: newStateByScope ?? {} })
+          }
+
         } else {
-          // 创建上下文
-          (this._design_ctx.create({ $state: this.$state  ?? {} }) as Promise<Ctx>).then((ctx: Ctx) => {
-            this._setCtxDesignMode(ctx)
-          })
+          (new LowcodeExecuteCtxFatory().create({ $state: newStateByScope ?? {} }) as Promise<Ctx>)
+            .then((ctx: Ctx) => {
+              this._addCtxDesignMode(pageId, ctx)
+            })
         }
       }
+
+      this.$state = newState
     })
 
-    // 更新model中的lifecycle
+    /**
+     *  更新model中的lifecycle
+     */ 
     autorun(() => {
       _.forEach(this.lifeCycleFiles, (file) => {
         const pathList = file.path.split('/').filter(item => item.length)
@@ -95,25 +98,9 @@ class Logic {
     })
   }
 
-  createPreviewCtx(): Promise<Ctx> {
-    return new Promise((res, rej) => {
-      if (this.ctxPeviewMode) {
-        (this.ctxPeviewMode as Ctx)?.updateCtx?.({ $state: this.$state  ?? {} })
-        res(this.ctxPeviewMode)
-      } else {
-        (this._preview_ctx.create({ $state: this.$state  ?? {} }) as Promise<Ctx>).then((ctx: Ctx) => {
-          this._setCtxPreviewMode(ctx)
-          res(ctx)
-        }).catch(() => {
-          rej()
-        })
-      }
-    })
-  }
-
   lifeCycleFiles: IFile[] = []
 
-  _initLifecycle = (projectModel: Project) => {
+  initLifecycle = (projectModel: Project) => {
     const pageFiles: IFile[] = this._generatePageLifecycle(projectModel)
 
     const handlerFiles = _.values(projectModel.methods).map(method => {
@@ -195,19 +182,19 @@ class Logic {
 
   $state: Record<string, any> = {}
 
-  _setCtxDesignMode = (ctx: Ctx) => {
-    this.ctxDesignMode = ctx
+  _addCtxDesignMode = (pageId: PageId, ctx: Ctx) => {
+    this.ctxDesignMode = { ...this.ctxDesignMode,  [pageId]: ctx }
+  }
+
+  _deleteCtxDesignMode = (pageId: PageId) => {
+    if (this.ctxDesignMode[pageId]) {
+      this.ctxDesignMode[pageId].delete()
+      this.ctxDesignMode = _.omit(this.ctxDesignMode, [pageId])
+    }
   }
 
   // 设计模式下 低代码执行上下文
-  ctxDesignMode!: Ctx
-
-  // 预览模式下 低代码执行上下文
-  ctxPeviewMode!: Ctx
-
-  _setCtxPreviewMode = (ctx: Ctx) => {
-    this.ctxPeviewMode = ctx
-  }
+  ctxDesignMode: Record<PageId, Ctx> = {}
 
   getAllVariable = () => {
     const { projectModel } = getModel()

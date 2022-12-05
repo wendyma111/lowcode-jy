@@ -48,6 +48,7 @@ const AddNewHandler = forwardRef((props, ref:any) => {
     </Form>
   )
 })
+AddNewHandler.displayName = 'AddNewHandler'
 
 function Catalogue(props: { catalogueInfo: ICatalogueInfo }) {
   const [open, toggleOpen] = useState(true)
@@ -94,7 +95,6 @@ function Catalogue(props: { catalogueInfo: ICatalogueInfo }) {
           })
         }
       },
-      onCancel() {},
     })
   } 
 

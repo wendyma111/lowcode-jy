@@ -1,18 +1,28 @@
 import React from 'react'
+import _ from 'lodash'
 import { InputNumber } from 'antd'
 import { IProps } from 'designer/setter/base.type'
 import StyleSetterLayout from 'designer/setter/base'
 
 function LineHeight(props: IProps) {
-  const { value = 22, onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.lineHeight'
+  const value = parseInt(_.get(nodeProps, prop))
 
   const handleChange = (v: any) => {
-    onChange?.('style.lineHeight', v)
+    onChange?.(prop, `${v}px`)
   }
 
   return <StyleSetterLayout 
     label="行高"
-    content={<InputNumber style={{ width: '100%' }} value={value} onChange={handleChange} addonAfter="px" />}
+    content={
+      <InputNumber 
+        style={{ width: '100%' }}
+        value={value}
+        onChange={handleChange}
+        addonAfter="px"
+      />
+    }
   />
 }
 

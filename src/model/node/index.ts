@@ -42,7 +42,7 @@ class NodeInstance implements NodeModel<NodeInstance> {
     return {
       ...this._schema,
       parentId: this.parent?.id ?? null,
-      props: Object.assign({}, this._props),
+      props: _.cloneDeep(this._props),
       children: this._children?.map?.(item => item.id) ?? []
     }
   }
@@ -110,10 +110,10 @@ class NodeInstance implements NodeModel<NodeInstance> {
 
     const defaultProps = {}
     const { settings = {} } = this.getComponentMeta() ?? {}
-    for(let prop in settings) {
+    for(const prop in settings) {
       _.set(defaultProps, settings[prop].settingName, settings[prop].value)
     }
-    this._props = _.assign(defaultProps, nodeSchema.props ?? {})
+    this._props = _.cloneDeep(_.assign(defaultProps, nodeSchema.props ?? {}))
 
     this.parent = nodeSchema.parentId === null 
       ? null
@@ -123,6 +123,7 @@ class NodeInstance implements NodeModel<NodeInstance> {
       const childNodeSchema = this?._document?.componentTree?.[childNodeId]
       return this._document.createNode(childNodeId, childNodeSchema)
     })
+    
     this._isContainer = !!this.getComponentMeta()?.isContainer
     // 虚拟根节点 & 容器节点 可以操作子节点
     if (this._isContainer || this.parent === null) {
@@ -170,12 +171,10 @@ class NodeInstance implements NodeModel<NodeInstance> {
   }
 
   setPropValue(propName: string, propValue: any) {
-    const modifedProps = {}
-    _.set(modifedProps, propName?.split?.('.'), propValue)
 
-    _.set(this._props, propName?.split?.('.'), propValue)
+    _.set(this._props, propName, propValue)
 
-    this._emitter.emit(props_change_event, modifedProps)
+    this._emitter.emit(props_change_event, _.cloneDeep(this._props))
 
     this.document.recordSnapShot()
   }
@@ -214,7 +213,6 @@ class NodeInstance implements NodeModel<NodeInstance> {
     }
   }
 
-  // @todo 此处逻辑待修改 不应该往componentTree中塞数据
   private _appendChildBySchema(nodeSchema: Record<string, INode>) {
     const [rootNodeId, rootNodeSchema] = Object.entries(nodeSchema).filter(([_, nodeSchema]) => nodeSchema.parentId === null)[0]
     Object.assign(this.document.componentTree, nodeSchema)
@@ -258,7 +256,7 @@ class NodeInstance implements NodeModel<NodeInstance> {
   }
 
   get descendant() {
-    let children = this.children
+    const children = this.children
     if (!children?.length) return []
     const descendantList: Array<NodeInstance> = []
     descendantList.push(...children)

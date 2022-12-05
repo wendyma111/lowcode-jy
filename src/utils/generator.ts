@@ -14,7 +14,7 @@ export const generateEmptyPageSchema: (name?: string) => IPage = (name?: string)
   const emptyPageSchema = {
     name: name ?? '空页面',
     data: {},
-    lifecycle: PAGE_LIFECYCLE_DEFAULT_VALUE, // @todo 待补充默认声明周期模板代码
+    lifecycle: PAGE_LIFECYCLE_DEFAULT_VALUE,
     componentTree: {
       [rootNodeId]: {
         parentId: null,

@@ -10,7 +10,7 @@ function toggle(contentDom: HTMLElement, type: 'pull' | 'push', callbackAfterAni
   let cancelId: number
   function callback() {
     const currentStyle = Number(contentDom.style.transform.match(/(-)?\d+/g)?.[0] ?? 0)
-    let newStyle = type === 'pull' ? currentStyle + 15 : currentStyle - 15
+    const newStyle = type === 'pull' ? currentStyle + 15 : currentStyle - 15
     contentDom.style.transform = `translate(${newStyle}px)`
     if (type === 'pull' && newStyle >= 0 && cancelId) {
       cancelAnimationFrame(cancelId)

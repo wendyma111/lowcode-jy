@@ -1,13 +1,16 @@
-import React from 'react'
+import React, { useCallback } from 'react'
+import _ from 'lodash'
 import { IProps } from 'designer/setter/base.type'
 import StyleSetterLayout from 'designer/setter/base'
 import { ColorPicker } from '../../text/color'
 
 function Background(props: IProps) {
-  const { value = '#fff', onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.background'
+  const value = _.get(nodeProps, prop)
 
   const handleChange = (v: any) => {
-    onChange?.('style.background', v)
+    onChange?.(prop, v)
   }
 
   return (

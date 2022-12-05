@@ -1,13 +1,16 @@
 import React from 'react'
+import _ from 'lodash'
 import { IProps } from 'designer/setter/base.type'
 import StyleSetterLayout from 'designer/setter/base'
 import { Select } from 'antd'
 
 function Clear(props: IProps) {
-  const { value = 'none', onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.clear'
+  const value = _.get(nodeProps, prop)
 
   const handleChange = (v: any) => {
-    onChange?.('style.clear', v)
+    onChange?.(prop, v)
   }
 
   return (

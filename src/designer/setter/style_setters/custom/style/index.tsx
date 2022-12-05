@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
+import _ from 'lodash'
+import { when } from 'mobx'
 import { Popover } from 'antd'
 import BindDataButton from 'designer/setter/binddata'
 import BasicalLowCodeEditor from 'designer/logic/basicLowcodeEditor'
 import baseStyle from 'designer/setter/base.module.css'
 import { IProps } from 'designer/setter/base.type'
+import { getModel } from 'model'
 import styles from './index.module.css'
 
 export const model_detail = {
@@ -36,15 +39,36 @@ function CustomStyle(props: IProps) {
       language={model_detail.language}
       theme="light"
       value={editorValue ?? model_detail.value}
+      onChange={changeEditorValue}
     />
   )
+
+  const handleSave = () => {
+    const { projectModel } = getModel()
+
+    when(
+      () => !!projectModel?.designer?.logic?.ctxDesignMode[projectModel?.currentDocument?.id as string],
+      () => {
+        const lowcodeExecute = projectModel?.designer?.logic?.ctxDesignMode[projectModel?.currentDocument?.id as string]
+        if (_.isNil(lowcodeExecute)) return
+
+        lowcodeExecute.autoExecute?.(
+          `() => (${editorValue})`,
+          'once',
+          (newValue) => {
+            onChange('style', _.assign(nodeProps.style ?? {}, newValue))
+          }
+        )
+      }
+    )
+  }
 
   return (
     <Popover
       title={(<div className={styles['space-between']}>
         <span>自定义样式编辑</span>
         <div>
-          <span className={styles.save}>保存</span>
+          <span className={styles.save} onClick={handleSave}>保存</span>
           <span className={styles.cancel} onClick={() => toggleOpen(false)}>取消</span>
         </div>
       </div>)}

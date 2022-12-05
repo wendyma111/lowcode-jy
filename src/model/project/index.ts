@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import Document from 'model/document'
 import NodeInstance from 'model/node';
 import Designer from 'designer';
-import { observable, makeObservable, action, runInAction, toJS } from 'mobx'
+import { observable, makeObservable, action, runInAction, toJS, autorun } from 'mobx'
 import { generateKey, generateEmptyPageSchema } from 'utils/generator'
 
 const current_document_change_event = 'current_document_change_event'
@@ -29,14 +29,24 @@ class Project implements ProjectModel {
     runInAction(() => {
       this.documents = new Map(this.documents.set(pageId, documentInstance))
     })
+
+    // 重新生成生命周期文件
+    this?.designer?.logic?.initLifecycle?.(this)
   }
 
   deleteDocument = (pageId: PageId) => {
+    // 删除doc
     runInAction(() => {
       const doc = new Map(this.documents)
       doc.delete(pageId)
       this.documents = doc
     })
+
+    // 删除相应的低代码执行期
+    this.designer.logic._deleteCtxDesignMode(pageId)
+
+    // 重新生成生命周期文件
+    this?.designer?.logic?.initLifecycle?.(this)
   }
 
   methods: Record<string, IMethod> = {}

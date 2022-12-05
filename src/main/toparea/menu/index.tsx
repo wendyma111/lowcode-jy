@@ -18,6 +18,7 @@ function Menu() {
         title="变量" 
         open={variableVisible}
         onCancel={() => setVariableVisible(false)}
+        onOk={() => setVariableVisible(false)}
       >
         <VariableContent />
       </Modal>

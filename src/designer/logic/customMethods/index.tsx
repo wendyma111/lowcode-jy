@@ -21,7 +21,6 @@ export const builtInApis = {
 
 type Reducer = (preState: IMethodInfo | null, action: IAction) => IMethodInfo | null
 
-// @ts-ignore
 const reducer: Reducer = function (preState, action) {
   switch (action.type) {
     case 'init': {
@@ -108,17 +107,13 @@ function CustomMethods(props: IProps) {
               path: finalInfo.path,
               extra
             })
-          } else {
-            message.warning('信息填写不完整')
           }
           closeModal()
         })
         .catch(() => {
-          message.warning('信息填写不完整')
+          message.warning('请检查表单')
         })
-    }
-
-    if (validateEventInfo(eventInfo as IMethodInfo)) {
+    } else if (validateEventInfo(eventInfo as IMethodInfo)) {
       node.setPropValue((eventInfo as IMethodInfo).event as string, {
         type: 'JSFunction',
         path: (eventInfo as IMethodInfo).path,

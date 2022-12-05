@@ -6,7 +6,6 @@ import _ from 'lodash'
 import { IOutlineTreeState, IOutlineItemProps, IOutlineItemState } from './index.type'
 import styles from './index.module.css'
 import { observer } from 'mobx-react'
-import Empty from '../empty'
 
 class OutlineTree extends Component<any, IOutlineTreeState> {
   clearCurrentDocumentChange: () => void

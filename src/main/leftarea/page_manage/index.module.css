@@ -7,3 +7,10 @@
   padding-right: 16px;
   border-bottom: 4px solid #edeff3;
 }
+
+.label-container {
+  width: 140;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

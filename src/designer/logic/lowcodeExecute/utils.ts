@@ -33,6 +33,6 @@ export function clone(source: any, constructors: any) {
 }
 
 export function getType(target: any) {
-  // @ts-ignore
-  return _.toLower(Object.prototype.toString.call(target)).match(/\[object\s(\S*)\]/)[1];
+  const targetType = _.toLower(Object.prototype.toString.call(target))
+  return targetType?.match?.(/\[object\s(\S*)\]/)?.[1];
 }

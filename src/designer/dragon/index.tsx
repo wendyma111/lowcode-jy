@@ -13,7 +13,6 @@ import NodeInstance from 'model/node'
 import { DragEvent } from 'react'
 import { addClassName, findNodeIdFromFiber, clearClassName } from 'simulator/utils'
 import { getModel } from 'model'
-import { findDOMNode } from 'react-dom'
 import { getDomByNodeId } from 'simulator/utils'
 
 class Dragon {
@@ -131,10 +130,15 @@ class Dragon {
 
       // 绘制辅助线
       if (hasInsertType && hasParent && hasDragObject) {
-
         _.forEach(this.sensors, ({ el, placeholder }) => {
           const targetDom = getDomByNodeId((this.targetNode as NodeInstance)?.id, el)
           placeholder.innerHTML = (this.dragObject as NodeInstance).getComponentMeta().componentName
+
+          // 插入根节点
+          if (this.parent?.parent === null && this.parent.children.length === 0) {
+            el.appendChild(placeholder)
+            return
+          }
 
           if (this.parent && this.insertType === 'last') {
             const parentDom = getDomByNodeId((this.parent as NodeInstance).id, el)
@@ -197,7 +201,6 @@ class Dragon {
     if (!this.dragObject) return
 
     const reactFiberKey = _.keys(e.target).find(item => item.startsWith('__reactFiber')) as string
-    // @ts-ignore
     const fiberNode = e.target[reactFiberKey]
     let targetNodeId = findNodeIdFromFiber(fiberNode)
     let targetNode = projectModel.currentDocument?.getNodeById(targetNodeId)
@@ -211,6 +214,13 @@ class Dragon {
       } else {
         return
       } 
+    }
+
+    const descendent = this.dragObject.descendant
+    // 移动到自身 / 自身的子节点上 重置拖拽数据
+    if ([this.dragObject, descendent].includes(targetNode)) {
+      this.resetDraggingData()
+      return
     }
 
     const targetContainer = targetNode.isContainer || targetNode === targetNode.document.rootNode ? targetNode : targetNode.parent
@@ -236,8 +246,8 @@ class Dragon {
         const { x: preX, y: preY } = ifInCanvas ? child.__mock_pre_position : child.__mock_pre_tree_position
         const { x: nextX, y: nextY } = ifInCanvas ? child.__mock_next_position : child.__mock_next_tree_position
 
-        let predistance = Math.abs((clientX - preX) * (clientY - preY))
-        let nextdistance = Math.abs((clientX - nextX) * (clientY - nextY))
+        const predistance = Math.abs((clientX - preX) * (clientY - preY))
+        const nextdistance = Math.abs((clientX - nextX) * (clientY - nextY))
 
         if (nextdistance <= predistance) {
           if (nextdistance < mindistance) {
@@ -260,8 +270,8 @@ class Dragon {
       const { x: preX, y: preY } = ifInCanvas ? targetNode.__mock_pre_position : targetNode.__mock_pre_tree_position
       const { x: nextX, y: nextY } = ifInCanvas ? targetNode.__mock_next_position : targetNode.__mock_next_tree_position
 
-      let nextdistance = Math.abs((clientX - preX) * (clientY - preY))
-      let predistance = Math.abs((clientX - nextX) * (clientY - nextY))
+      const nextdistance = Math.abs((clientX - preX) * (clientY - preY))
+      const predistance = Math.abs((clientX - nextX) * (clientY - nextY))
       placeTargetNodeId = targetNode.id
 
       if (nextdistance <= predistance) {
@@ -282,8 +292,7 @@ class Dragon {
 
   handleDrop = _.throttle((e: DragEvent) => {
     e.preventDefault()
-
-    if (!this.dragObject) return
+    if (!this.dragObject || !this.parent) return
 
     if (getModel().projectModel.currentDocument?.getNodeById(this.dragObject.id)) {
       this.dragObject.parent?.removeChild(this.dragObject)
@@ -320,6 +329,9 @@ class Dragon {
     const index = this.sensors.findIndex(sensor => sensor.el.id === el.id)
     if (index !== -1) {
       this.sensors[index].el = el
+
+      el.addEventListener('dragover', this.handleDragOver as any, true)
+      el.addEventListener('drop', this.handleDrop as any, true)
       return
     }
     // 辅助线节点
@@ -327,10 +339,8 @@ class Dragon {
     placeholder.className = 'drag-placeholder'
 
     this.sensors.push({ el, placeholder })
-    // @ts-ignore
-    el.addEventListener('dragover', this.handleDragOver, true)
-    // @ts-ignore
-    el.addEventListener('drop', this.handleDrop, true)
+    el.addEventListener('dragover', this.handleDragOver as any, true)
+    el.addEventListener('drop', this.handleDrop as any, true)
   }
 }
 

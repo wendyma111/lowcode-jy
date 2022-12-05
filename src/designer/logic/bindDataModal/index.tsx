@@ -1,21 +1,25 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Modal, Tooltip, message, Button, Tabs } from 'antd'
 import { ExclamationCircleOutlined, CopyOutlined } from '@ant-design/icons'
 import { getModel } from 'model'
 import VariableContent from '../variableContent'
 import { IProps } from './index.type'
 import styles from './index.module.css'
+import ExpressionEditor from '../expressionEditor'
+import { IMarker } from 'designer/logic/basicLowcodeEditor/index.type'
 
 function BindDataModal(props: IProps) {
   const { open, toggleOpen, node, targetProp } = props
   const currentPropValue = node.getPropValue(targetProp)
   const [path, setPath] = useState<string | null>(null)
+  const dataType = useRef<'variable' | 'lowcode' | null>(null)
+  const expressionRef = useRef<IMarker[]>([])
 
   useEffect(() => {
-    if (currentPropValue?.type === 'JSExpression') {
+    if (currentPropValue?.type === 'JSExpression' && open) {
       setPath(currentPropValue.value)
     }
-  }, [currentPropValue])
+  }, [currentPropValue, open])
 
   const handleCopy = () => {
     navigator.clipboard.writeText(path as string)
@@ -26,28 +30,39 @@ function BindDataModal(props: IProps) {
 
   const onSave = () => {
     const { targetProp } = props
-    if (typeof path === 'string') {
-      const [,scope,key] = path.split('.')
-      const dataInfo = scope === 'global' 
-        ? getModel().projectModel.data[key]
-        : getModel().projectModel.getDocument(scope)?.data?.[key]
 
-      // 绑定数据类型校验
-      if (dataInfo?.type !== node.getComponentMeta().settings[targetProp]?.type) {
-        Modal.confirm({
-          title: '警告',
-          icon: <ExclamationCircleOutlined />,
-          content: '绑定数据类型与组件属性类型不一致，无法进行绑定',
-          okText: '确认',
-          cancelText: '取消',
-        });
+    if (dataType.current === 'variable') {
+      if (typeof path === 'string') {
+        const [,scope,key] = path.split('.')
+        const dataInfo = scope === 'global' 
+          ? getModel().projectModel.data[key]
+          : getModel().projectModel.getDocument(scope)?.data?.[key]
+
+        // 绑定数据类型校验
+        if (dataInfo?.type !== node.getComponentMeta().settings[targetProp]?.type) {
+          Modal.confirm({
+            title: '警告',
+            icon: <ExclamationCircleOutlined />,
+            content: '绑定数据类型与组件属性类型不一致，无法进行绑定',
+            okText: '确认',
+            cancelText: '取消',
+          });
+        } else {
+          node.setPropValue(targetProp, { type: 'JSExpression', value: path })
+          closeModal()
+        }
       } else {
-        node.setPropValue(targetProp, { type: 'JSExpression', value: path })
         closeModal()
       }
-    } else {
-      closeModal()
     }
+
+    if (dataType.current === 'lowcode') {
+      if (expressionRef.current.length == 0) {
+        node.setPropValue(targetProp, { type: 'JSExpression', value: path })
+      }
+    }
+
+    closeModal()
   }
 
   const unbind = () => {
@@ -76,15 +91,29 @@ function BindDataModal(props: IProps) {
     </div>
   )
 
+  const setVariablePath = useCallback((v: string) => {
+    setPath(v); 
+    dataType.current = 'variable' 
+  }, [setPath])
+
+  const setLowcodePath = useCallback((v: string) => { 
+    setPath(v);
+    dataType.current = 'lowcode'
+  }, [setPath])
+
   return (
     <Modal
+      destroyOnClose
       footer={footer}
       width={980}
       onCancel={closeModal}
       centered
       title="绑定变量"
       open={open}
-      afterClose={() => setPath(null)}
+      afterClose={() => {
+        setPath(null)
+        dataType.current = null
+      }}
     >
       <Tabs
         defaultActiveKey="variable"
@@ -92,11 +121,18 @@ function BindDataModal(props: IProps) {
           {
             label: '变量',
             key: 'variable',
-            children: <VariableContent setPath={setPath} />
+            children: <VariableContent setPath={setVariablePath} />
           },
           {
             label: '表达式',
             key: 'expression',
+            children: (
+              <ExpressionEditor
+                path={path}
+                setPath={setLowcodePath}
+                markerRef={expressionRef}
+              />
+            )
           }
         ]}
       />

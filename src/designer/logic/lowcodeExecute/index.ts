@@ -6,12 +6,12 @@
  * 3、autoExecute：在已创建好的上下文中执行代码字符串，可选择 仅执行一次 / 在上下文更新后自动执行, 返回reaction的清理函数
  * 
  * 内部方法：
- * 1、_generateCtx：基于外部传进来的config，生成上下文，并结合with + proxy，形成访问白名单
+ * 1、generateCtx：基于外部传进来的config，生成上下文，并结合with + proxy，形成访问白名单
  * 2、_postMessage：基于window.postMessage进行包装，为解决单次发消息可能出现的消息丢失问题
  */
 import _ from 'lodash';
 import React from 'react';
-import { observable, action, makeObservable, IReactionDisposer, reaction } from 'mobx'
+import { observable, action, makeObservable, reaction, IReactionDisposer } from 'mobx'
 import { createRoot } from 'react-dom/client';
 import { clone } from './utils';
 import globalWhitelist from './globalWhitelist';
@@ -28,6 +28,12 @@ class LowcodeExecuteCtxFatory {
   _ctxConfig!: Record<string, any>;
   _timeout = 2000;
 
+  /**
+   * 监听清理器
+   *  用于在当前低码执行器被删除时，进行批量清理
+   */
+  clearReactions: IReactionDisposer[] = []
+
   constructor() {
     makeObservable(this, {
       _ctxConfig: observable.ref,
@@ -40,6 +46,11 @@ class LowcodeExecuteCtxFatory {
   }
 
   static _whitelist = globalWhitelist;
+  
+  delete() {
+    // 批量清理监听
+    this.clearReactions.forEach(clear => clear?.())
+  }
 
   autoExecute(code: string, type: 'once' | 'auto', callback?: (newValue: any) => void) {
     if (!this._iframe) {
@@ -61,9 +72,10 @@ class LowcodeExecuteCtxFatory {
      * 清理时机：
      *  1、props修改时
      *  2、组件卸载时
+     *  3、当前页面被删除时
      */ 
     if (type === 'auto') {
-      return reaction(
+      const disposer: IReactionDisposer= reaction(
         () => this._ctxConfig,
         () => {
           this.autoExecute(code, 'once', callback)
@@ -72,6 +84,10 @@ class LowcodeExecuteCtxFatory {
           fireImmediately: false
         }
       )
+
+      this.clearReactions.push(disposer)
+
+      return disposer
     }
   }
 
@@ -123,11 +139,12 @@ class LowcodeExecuteCtxFatory {
     }, 700);
   }
 
-  private _generateCtx(config: any, contentWindow: any) {
+  generateCtx(config: any) {
     if (!this._iframe) {
       console.warn('请先调用Context.create，创建iframe实例');
       return;
     }
+    const iframeWindow = this._iframe.contentWindow
     const commonCtx = new Proxy(config, {
       /**
        * 限制向上查找
@@ -140,7 +157,7 @@ class LowcodeExecuteCtxFatory {
           return undefined;
         }
         if (globalWhitelist.includes(key as string)) {
-          return target[key] ?? contentWindow[key as string];
+          return target[key] ?? iframeWindow[key as string];
         } else {
           console.warn(`${String(key)}该方法不允许访问`);
           return undefined;
@@ -160,8 +177,7 @@ class LowcodeExecuteCtxFatory {
         const el = document.getElementById('_lowCode_iframe_');
         if (!el) {
           const iframe = document.createElement('iframe');
-          // @ts-ignore
-          iframe.style = 'display:none;';
+          (iframe as any).style = 'display:none;';
           iframe.setAttribute('id', '_lowCode_iframe_');
           iframe.setAttribute('src', '/lowcode');
           iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
@@ -178,11 +194,12 @@ class LowcodeExecuteCtxFatory {
             this._iframe = iframe;
             this._setCtxConfig(config)
 
-            const commonCtx = this._generateCtx(config, iframe.contentWindow);
+            const commonCtx = this.generateCtx(config);
             _.set(iframe.contentWindow as Window, ['ctx', id], commonCtx);
             resolve({
               autoExecute: this.autoExecute.bind(this),
               updateCtx: this.updateCtx.bind(this),
+              delete: this.delete.bind(this)
             });
           };
         } else {
@@ -190,9 +207,13 @@ class LowcodeExecuteCtxFatory {
           this._iframe = el;
 
           this._setCtxConfig(config)
-          const commonCtx = this._generateCtx(config, (el as HTMLIFrameElement).contentWindow);
+          const commonCtx = this.generateCtx(config);
           _.set((el as HTMLIFrameElement).contentWindow as Window, ['ctx', id], commonCtx);
-          resolve({ autoExecute: this.autoExecute.bind(this), updateCtx: this.updateCtx.bind(this) });
+          resolve({
+            autoExecute: this.autoExecute.bind(this),
+            updateCtx: this.updateCtx.bind(this),
+            delete: this.delete.bind(this)
+          });
         }
       });
     }

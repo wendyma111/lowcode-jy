@@ -77,7 +77,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "deploy": "node scripts/deploy.js"
   },
   "eslintConfig": {
     "extends": [
@@ -101,7 +102,8 @@
     "@types/lodash": "^4.14.186",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
-    "eslint-plugin-react": "^7.31.10"
+    "eslint-plugin-react": "^7.31.10",
+    "gh-pages": "^4.0.0"
   },
   "jest": {
     "roots": [

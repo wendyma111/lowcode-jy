@@ -14,7 +14,6 @@ class IframeComp extends Component {
 
       switch (type) {
         case 'lowCode_eval': {
-
           // eslint-disable-next-line no-new-func
           try {
             const resolver = new Function(`

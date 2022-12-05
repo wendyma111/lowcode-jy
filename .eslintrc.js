@@ -21,5 +21,15 @@ module.exports = {
     ],
     "rules": {
         "react/no-find-dom-node": "off", // 暂且允许使用react-dom的findDOMNode方法
+        "react/no-unknown-property": [
+            "error",
+            {
+                "ignore": [
+                    "mock-pre-nodeid",
+                    "mock-next-nodeid",
+                ]
+            }
+        ],
+        "react/prop-types": 0
     }
 }

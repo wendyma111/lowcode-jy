@@ -2,9 +2,10 @@ import NodeInstance from 'model/node';
 import React, { PureComponent } from 'react'
 import { SimulatorContent, PreviewContent } from './hoc/simulator'
 import { getModel } from 'model'
-import { toJS, observable, action } from 'mobx';
+import { toJS } from 'mobx';
 import { inject, observer, Provider } from 'mobx-react'
 import _ from 'lodash';
+import LowcodeExecuteCtxFatory from 'designer/logic/lowcodeExecute'
 
 interface IProps {
   documentModel: DocumentModel;
@@ -18,63 +19,71 @@ class ErrorDisplay extends PureComponent {
   }
 }
 
-export interface IPreviewPage {
-  $state: any;
-  $api: any
+/**
+ * 构造预览环境 低代码执行环境，确保 预览 & 画布中 低代码均执行在白名单内部
+ */
+const previewLowCodeExcute = (
+  iframe: HTMLIFrameElement
+) => {
+  const factory = new LowcodeExecuteCtxFatory()
+  factory._iframe = iframe
+
+  return (code: string, $state: Record<any, any>, $api: Record<any, any>) => {
+    const ctx = factory.generateCtx({
+      $state: toJS($state),
+      $api
+    })
+
+    return new Function(`
+      return function(ctx) {
+        with(ctx) {
+          try {
+            ${code}
+          } catch(e){
+            console.log('低代码执行失败', e)
+          }
+        }
+      }
+    `)()(ctx)
+  }
 }
 
 class rendererFactory {
-  static previewFactory = () => {
+  static previewFactory = (iframe: HTMLIFrameElement, store: any) => {
     const { projectModel } = getModel()
-    
-    // 生成store
-    const storeData: Record<string, any> = {}
-    storeData['global'] = _.mapValues(toJS(projectModel.data), (value) => {
-      return value.defaultValue
-    })
-    for (const [key, doc] of projectModel.documents) {
-      storeData[key] = _.mapValues(toJS(doc.data), (value) => {
-        return value.defaultValue
-      })
-    }
-  
-    const $state = observable(storeData)
-    const $api = {
-      dispatch: action((path: string, value: any) => {
-        try {
-          _.set($state, path, value)
-        } catch(e) {
-          console.error(`dispatch调用报错 ${e}`)
-        }
-      })
-    }
+
+    const lowcodeExecute = previewLowCodeExcute(iframe)
 
     const methods = Object.assign({}, projectModel.methods ?? {})
     _.values(methods).map((method) => {
-      _.set($api, `custom.${method.key}`, new Function('$state', '$api', 'return ' + method.value)($state, $api))
+      store.add$api(`custom.${method.key}`, lowcodeExecute('return ' + method.value, store.$state, store.$api))
     })
   
     const route: Record<string, any> = {}
 
     for(const [pageId, doc] of projectModel.documents) {
       
-      @inject(({store, navigate}) => ({ 
-        $state: {
-          global: store.$state.global,
-          [pageId]: store.$state[pageId]
-        },
-        $api: { ...store.$api, navigate }
-      }))
+      @inject(({store}) => {
+        return {
+          $state: {
+            global: store.$state.global,
+            [pageId]: store.$state[pageId]
+          },
+          $api: store.$api
+        }
+      })
       @observer
-      class Page extends React.Component<IPreviewPage> {
+      class Page extends React.Component<any> {
 
         excuteLifecycle(stage: 'componentDidMount' | 'componentDidUpdate' | 'componentWillUnmount') {
           const { $state, $api } = this.props
+
           const parsed_lifecycle = doc.lifecycle.replace(/export(\s+)default/, 'const lifecycle =')
-          new Function('$state', '$api', `
-            ${parsed_lifecycle}
-            lifecycle.${stage}()
-          `)($state, $api)
+
+          lowcodeExecute(`
+            ${parsed_lifecycle};
+            lifecycle.${stage}?.()
+          `, $state, $api)
         }
   
         componentDidMount(): void {
@@ -100,7 +109,7 @@ class rendererFactory {
   
         createElement(node: NodeInstance): React.ReactNode {
           const { $state, $api } = this.props
-          
+
           return React.createElement(
             PreviewContent,
             {
@@ -109,6 +118,7 @@ class rendererFactory {
               key: node.id,
               $state,
               $api,
+              lowcodeExecute,
             }
           )
         }
@@ -127,11 +137,19 @@ class rendererFactory {
       route[pageId] = Page
     }
 
-    return (props: { pageId: string, navigate: (path: string) => void }) => (
-      <Provider store={{ $state, $api }}>
-        {React.createElement(route[props?.pageId], { navigate: props.navigate  })}
-      </Provider>
-    )
+    const PreviewComp = (props: { pageId: string, navigate: (path: string) => void }) => {
+      store.add$api('navigate', props.navigate)
+
+      return (
+        <Provider store={store}>
+          {
+            route[props?.pageId] ? React.createElement(route[props?.pageId], {}) : null
+          }
+        </Provider>
+      )
+    }
+    PreviewComp.displayName = 'PreviewComp'
+    return PreviewComp
   }
 
   static designFactory = () => {
@@ -175,7 +193,6 @@ class rendererFactory {
       createElement(node: NodeInstance): React.ReactNode {
         // 弃用hoc模式，使用hoc 会导致生成新的组件，导致其内部的子组件全部重新渲染
         return React.createElement(
-          // @ts-ignore
           // simulatorFactory(componentConstructor, 'design'),
           SimulatorContent,
           {

@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import _ from 'lodash'
 import { Radio, RadioChangeEvent } from 'antd'
 import { AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined } from '@ant-design/icons'
 import { IProps } from 'designer/setter/base.type'
@@ -6,10 +7,12 @@ import StyleSetterLayout from 'designer/setter/base'
 import styles from './index.module.css'
 
 function TextAlign(props: IProps) {
-  const { value = 'left', onChange } = props
+  const { nodeProps, onChange } = props
+  const prop = 'style.textAlign'
+  const value = _.get(nodeProps, prop)
 
   const handleChange = useCallback((e: RadioChangeEvent) => {
-    onChange?.('style.textAlign', e.target.value)
+    onChange?.(prop, e.target.value)
   }, [onChange])
 
   return (

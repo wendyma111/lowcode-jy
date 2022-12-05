@@ -11,6 +11,12 @@ export function ColorPicker(props: { value: string, onChange: (v: string) => voi
   const [color, setColor] = useState(value.replace('#', ''))
   const hexReg = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
 
+  useEffect(() => {
+    if (typeof value === 'string') {
+      setColor(value.replace('#', ''))
+    }
+  }, [value])
+
   const changeColorByPicker = useCallback((color: ColorResult) => {
     onChange?.(color.hex)
     setColor(color.hex.replace('#', ''))
@@ -22,6 +28,7 @@ export function ColorPicker(props: { value: string, onChange: (v: string) => voi
       onChange?.(`#${e.target.value}`)
     }
   }, [])
+
   return (
     <div className={styles['color-container']}>
       <Popover

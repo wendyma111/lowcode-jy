@@ -52,7 +52,9 @@ class AstCheck extends AstCheckType {
       if (this.marks.length > 0) {
         this.emitMarks(this.marks.filter((item) => !_.isNil(item)))
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e)
+    }
   }, 500)
 
   // 对语法节点进行自定义rule&公共rule检查
