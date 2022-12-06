@@ -26,6 +26,12 @@ export class PreviewContent extends PureComponent<IProps & IPreviewPage> {
     for (const prop in props) {
       let value = props[prop]
       if (props[prop]?.type === 'JSExpression') {
+        // 自定义样式
+        if (prop === '__customStyle') {
+          const customStyle = lowcodeExecute('return ' + `(${props[prop].value})`, $state, $api)
+          finalProps['style'] = _.assign(props.style, customStyle)
+          continue
+        }
         // value = new Function('$state', '$api', 'return ' + props[prop].value)($state, $api)
         value = lowcodeExecute('return ' + `(${props[prop].value})`, $state, $api)
       }

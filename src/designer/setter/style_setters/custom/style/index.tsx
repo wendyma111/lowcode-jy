@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import _ from 'lodash'
 import { when } from 'mobx'
 import { Popover } from 'antd'
@@ -29,7 +29,15 @@ export const model_detail = {
 function CustomStyle(props: IProps) {
   const { nodeProps, onChange } = props
   const [open, toggleOpen] = useState(false)
-  const [editorValue, changeEditorValue] = useState(nodeProps?.['_customStyle'])
+  const [editorValue, changeEditorValue] = useState(nodeProps?.['__customStyle']?.value ?? model_detail.value)
+
+  useEffect(() => {
+    if (nodeProps['__customStyle']?.type === 'JSExpression' && nodeProps['__customStyle']?.value) {
+      changeEditorValue(nodeProps['__customStyle'].value)
+    } else {
+      changeEditorValue(model_detail.value)
+    }
+  }, [nodeProps, nodeProps['__customStyle']])
 
   const content = (
     <BasicalLowCodeEditor
@@ -38,13 +46,15 @@ function CustomStyle(props: IProps) {
       path={model_detail.path}
       language={model_detail.language}
       theme="light"
-      value={editorValue ?? model_detail.value}
+      value={editorValue}
       onChange={changeEditorValue}
     />
   )
 
   const handleSave = () => {
     const { projectModel } = getModel()
+
+    onChange('__customStyle', { type: 'JSExpression', value: editorValue })
 
     when(
       () => !!projectModel?.designer?.logic?.ctxDesignMode[projectModel?.currentDocument?.id as string],
@@ -54,7 +64,7 @@ function CustomStyle(props: IProps) {
 
         lowcodeExecute.autoExecute?.(
           `() => (${editorValue})`,
-          'once',
+          'auto',
           (newValue) => {
             onChange('style', _.assign(nodeProps.style ?? {}, newValue))
           }
