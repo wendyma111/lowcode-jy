@@ -1,46 +1,41 @@
-# Getting Started with Create React App
+# 低代码平台 lowcode-jy  
+[live demo](https://wendyma111.github.io/lowcode-jy/)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 启动
+```js
+yarn start
+```
 
-## Available Scripts
+## 文档中心
+[链接](https://wendyma111.github.io/lowcode-doc/)
 
-In the project directory, you can run:
+## 相关基建
+* [入料模块github](https://github.com/wendyma111/lowcode-jy-utils/tree/feature/lowcode/packages/lc-cli)
+* [出码模块github](https://github.com/wendyma111/lowcode-jy-utils/tree/feature/lowcode/packages/codegen)
 
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 目录结构
+```js
+src
+├── constant  // 常量
+├── designer
+│   ├── dragon  // 拖拽模块
+│   ├── logic   // 逻辑模块
+│   │   ├── astCheck  // ast语法树检查
+│   │   ├── basicLowcodeEditor  // 基础ide
+│   │   ├── lifecycle   // 生命周期
+│   │   ├── lowcodeExecute  // 设计态 - 低代码执行器
+│   │   └── variableContent  // 变量中心
+│   └── setter  // 配置项组件
+├── main  // 主入口文件
+├── model   // 编排模型
+│   ├── component   // 组件模型
+│   ├── document    // 文档模型
+│   ├── node        // 节点模型
+│   └── project     // 项目模型
+├── renderer   // 渲染模块
+├── simulator  // 交互模块
+│   ├── preview   // 预览
+│   ├── tools
+│   │   ├── contextmenu   // 右键菜单
+│   │   ├── guideline     // 选中框
+```
