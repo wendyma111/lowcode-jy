@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import { QuestionCircleOutlined } from '@ant-design/icons'
+import { Tooltip } from 'antd'
 import styles from './index.module.css'
 import Logo from './logo'
 import Menu from './menu'
@@ -16,6 +18,12 @@ class TopArea extends Component {
       </div>
       <Auxiliary />
       <div className={styles.right}>
+        <Tooltip title="查看文档">
+          <QuestionCircleOutlined
+            style={{ color: '#1890ff' }}
+            onClick={() => window.open('https://wendyma111.github.io/lowcode-doc/')} 
+          />
+        </Tooltip>
         <SchemaButton />
         <PreviewButton />
       </div>
